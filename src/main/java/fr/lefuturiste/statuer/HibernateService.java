@@ -25,6 +25,9 @@ public class HibernateService {
             configuration.setProperty("hibernate.connection.username", username);
             configuration.setProperty("hibernate.connection.password", password);
             configuration.setProperty("hibernate.show_sql", "false");
+            configuration.setProperty("hibernate.connection.autoReconnect", "true");
+            configuration.setProperty("hibernate.connection.autoReconnectForPools", "true");
+            configuration.setProperty("hibernate.connection.is-connection-validation-required", "true");
             String debugConfig = "Hibernate settings " +
                     configuration.getProperty("connection.url") +
                     " " +
