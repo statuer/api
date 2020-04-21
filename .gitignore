@@ -2,7 +2,9 @@ tmp
 .idea
 *.iml
 target
-.env
 .classpath
 .project
 .vscode
+.env.local
+.env.prod
+.env
