@@ -104,22 +104,28 @@ public class DiscordBot {
 
                             // 'create' 'param1="something' 'else"'
                             // we look for components with quotes
-                            String pair = null;
+                            StringBuilder pair = null;
                             ArrayList<String> newCommandComponents = new ArrayList<>();
                             for (String commandComponent : commandComponents) {
                                 if (commandComponent.indexOf('"') != -1 && pair == null) {
-                                    pair = commandComponent;
+                                    pair = new StringBuilder(commandComponent);
                                 } else if (commandComponent.indexOf('"') != -1 && pair != null) {
-                                    newCommandComponents.add(pair.substring(1) + ' ' + commandComponent.substring(0, commandComponent.length() - 1));
+                                    newCommandComponents.add(
+                                            pair.toString().replaceAll("\"", "") +
+                                            ' ' + commandComponent.replaceAll("\"", "")
+                                    );
                                     pair = null;
+                                } else if (pair != null) {
+                                    pair.append(" ").append(commandComponent);
                                 } else {
                                     newCommandComponents.add(commandComponent);
                                 }
                             }
                             if (pair != null) {
-                                newCommandComponents.add(pair.substring(1, pair.length() - 1));
+                                newCommandComponents.add(pair.toString().replaceAll("\"", ""));
                             }
 
+                            // System.out.println(newCommandComponents);
                             commandComponents = newCommandComponents.toArray(new String[0]);
                             switch (commandComponents[0]) {
                                 case "debug":
