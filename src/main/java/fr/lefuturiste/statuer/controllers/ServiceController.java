@@ -53,9 +53,6 @@ public class ServiceController {
         if (body.has("timeout")) {
             service.setTimeout(body.getInt("timeout"));
         }
-        if (body.has("http_expected_status")) {
-            service.setHttpExpectedStatus(body.getInt("http_expected_status"));
-        }
         service.setCheckPeriod(body.getInt("check_period"));
         if (body.has("discord_webhook")) {
             service.setDiscordWebhook(body.getString("discord_webhook"));

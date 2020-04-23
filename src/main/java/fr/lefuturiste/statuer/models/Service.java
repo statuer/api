@@ -42,8 +42,6 @@ public class Service {
      */
     private Integer checkPeriod = 120;
 
-    private Integer httpExpectedStatus = 200; // 200|400
-
     /**
      * The uri where the check thread will check if weather or not the service is up
      */
@@ -108,7 +106,6 @@ public class Service {
         jsonObject.put("is_available", getAvailable());
         jsonObject.put("status", status);
         jsonObject.put("check_period", checkPeriod);
-        jsonObject.put("http_expected_status", httpExpectedStatus);
         jsonObject.put("discord_webhook", discordWebhook);
         jsonObject.put("last_checked_at", lastCheckAt != null ? lastCheckAt.toString() : null);
         jsonObject.put("last_incident", lastIncident != null ? lastIncident.toString() : null);
@@ -142,14 +139,6 @@ public class Service {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public int getHttpExpectedStatus() {
-        return httpExpectedStatus;
-    }
-
-    public void setHttpExpectedStatus(int httpExpectedStatus) {
-        this.httpExpectedStatus = httpExpectedStatus;
     }
 
     public int getCheckPeriod() {

@@ -15,16 +15,21 @@ public class HttpChecker implements CheckerInterface {
         httpClient = new OkHttpClient();
     }
 
+    /**
+     * Will consider a http service as UP only if the status code start with a 2 (2XX)
+     *
+     * @param service The service to check
+     * @return boolean
+     */
     public boolean isAvailable(Service service) {
         Request request = new Request.Builder().url(service.getUrl()).build();
         Response response;
-        int code = 0;
-        int expectedStatus = service.getHttpExpectedStatus() == 0 ? 200 : service.getHttpExpectedStatus();
+        String code = "";
         try {
             response = httpClient.newCall(request).execute();
             response.close();
-            code = response.code();
+            code = String.valueOf(response.code());
         } catch (IOException ignored) {}
-        return expectedStatus == code;
+        return code.charAt(0) == '2';
     }
 }

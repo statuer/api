@@ -99,6 +99,7 @@ public class CheckThread implements Runnable {
                             numberBigDecimal = numberBigDecimal.setScale(8, RoundingMode.HALF_UP);
                             App.logger.debug("Updated uptime to " + numberBigDecimal);
                             service.setUptime(numberBigDecimal.floatValue());
+                            IncidentStore.persist(lastIncident, false);
                         }
                         App.logger.info("Status of service " + service.getSlug() + " changed to " + (isAvailable ? "UP" : "DOWN"));
                         // we can now notify of the incident (updated or created)

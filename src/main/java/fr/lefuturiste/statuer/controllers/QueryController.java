@@ -144,9 +144,6 @@ public class QueryController {
             if (body.has("url")) {
                 objectQueryResult.service.setUrl(body.getString("url"));
             }
-            if (body.has("http_expected_status")) {
-                objectQueryResult.service.setHttpExpectedStatus(body.getInt("http_expected_status"));
-            }
             Validator<Service> validator = new Validator<>(objectQueryResult.service);
             if (!validator.isValid()) {
                 res.status(404);
