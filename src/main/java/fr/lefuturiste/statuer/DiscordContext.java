@@ -13,6 +13,10 @@ public class DiscordContext {
         this.event = event;
     }
 
+    public void startLoading() {
+        event.getChannel().sendTyping().complete();
+    }
+
     public MessageReceivedEvent getEvent() {
         return event;
     }
