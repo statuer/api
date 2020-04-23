@@ -3,6 +3,7 @@ package fr.lefuturiste.statuer.notifier;
 import fr.lefuturiste.statuer.App;
 import fr.lefuturiste.statuer.models.Incident;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.webhook.WebhookClient;
 import net.dv8tion.jda.webhook.WebhookClientBuilder;
 
 import java.awt.*;
@@ -41,7 +42,9 @@ public class DiscordNotifier implements NotifierInterface {
             } else {
                 embed.setColor(Color.decode("#e74c3c")).setTitle("New incident!");
             }
-            new WebhookClientBuilder(discordWebhook).build().send(embed.build());
+            WebhookClient webhookClient = new WebhookClientBuilder(discordWebhook).build();
+            webhookClient.send(embed.build());
+            webhookClient.close();
         }
     }
 }
