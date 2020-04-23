@@ -9,6 +9,7 @@ import spark.Response;
 import spark.Spark;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class App {
@@ -22,7 +23,18 @@ public class App {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing()
                 .directory(System.getProperty("user.dir"))
                 .load();
-
+        String[] requiredKeys = {"PORT", "MYSQL_CONNECTION_URL", "MYSQL_USERNAME", "MYSQL_PASSWORD", "DISCORD_BOT_TOKEN", "DISCORD_CLIENT_ID"};
+        ArrayList<String> missingKeys = new ArrayList<>();
+        for (String key: requiredKeys) {
+            if (dotenv.get(key) == null)
+                missingKeys.add(key);
+        }
+        if (!missingKeys.isEmpty()) {
+            System.err.println("ERR: Missing keys in environment variables");
+            System.err.println("ERR: These environments keys are missing: " + missingKeys.toString());
+            return;
+        }
+        Spark.port(Integer.valueOf(Objects.requireNonNull(dotenv.get("PORT"))));
         System.setProperty("org.jboss.logging.provider", "slf4j");
         System.setProperty("user.timezone", "Europe/Paris");
         HibernateService.setConfig(
