@@ -1,7 +1,7 @@
 package fr.lefuturiste.statuer.controllers;
 
 import fr.lefuturiste.statuer.App;
-import fr.lefuturiste.statuer.DiscordBot;
+import fr.lefuturiste.statuer.DiscordContext;
 import fr.lefuturiste.statuer.models.Namespace;
 import fr.lefuturiste.statuer.models.Project;
 import fr.lefuturiste.statuer.models.Service;
@@ -10,7 +10,6 @@ import fr.lefuturiste.statuer.stores.ProjectStore;
 import fr.lefuturiste.statuer.stores.QueryStore;
 import fr.lefuturiste.statuer.stores.ServiceStore;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.hibernate.validator.internal.util.logging.formatter.DurationFormatter;
 
 import java.awt.*;
@@ -21,48 +20,53 @@ import java.util.stream.Collectors;
 
 public class DiscordCommandsController {
 
-    public interface DiscordCommandRoute {
-        void run(MessageReceivedEvent event, String[] commandComponents);
+    public static void ping(DiscordContext context) {
+        context.respond("Pong!");
     }
 
-    public static DiscordCommandRoute ping = (event, commandComponents) -> event.getChannel().sendMessage("Pong!").complete();
+    public static void debug(DiscordContext context) {
+        StringBuilder output = new StringBuilder("```\n");
+        for (String commandComponent : context.getPartsAsArray())
+            output.append(commandComponent).append("\n");
+        output.append("```");
+        context.respond(output.toString());
+    }
 
-    public static DiscordCommandRoute help = (event, commandComponents) -> event.getChannel().sendMessage(new EmbedBuilder()
-            .setTitle(":interrobang: Commands available")
-            .setColor(Color.decode("#2980b9"))
-            .addField("??create <path>", "Create all entities of the path", false)
-            .addField("??edit <path> key1=value1 key2=value2", "Edit a path with key=value syntax", false)
-            .addField("??delete <path>", "Recursively delete a path", false)
-            .addField("??get <path>", "Get path's data", false)
-            .addField("??about", "Get bot's meta data", false)
-            .addField("??ping", "Ping bot", false)
-            .build()
-    ).complete();
+    public static void help(DiscordContext context) {
+        context.respondEmbed(new EmbedBuilder()
+                .setTitle(":interrobang: Commands available")
+                .setColor(Color.decode("#2980b9"))
+                .addField("??create <path>", "Create all entities of the path", false)
+                .addField("??edit <path> key1=value1 key2=value2", "Edit a path with key=value syntax", false)
+                .addField("??delete <path>", "Recursively delete a path", false)
+                .addField("??get <path>", "Get path's data", false)
+                .addField("??about", "Get bot's meta data", false)
+                .addField("??ping", "Ping bot", false)
+        );
+    }
 
-    public static DiscordCommandRoute about = (event, commandComponents) -> {
+    public static void about(DiscordContext context) {
         long upTime = App.getUpTime().getSeconds();
-        String upTimeHuman = String.format("%d:%02d:%02d", upTime/3600, (upTime%3600)/60, (upTime%60));
-        event.getChannel().sendMessage(new EmbedBuilder()
+        String upTimeHuman = String.format("%d:%02d:%02d", upTime / 3600, (upTime % 3600) / 60, (upTime % 60));
+        context.respondEmbed(new EmbedBuilder()
                 .setTitle("About statuer")
                 .setColor(Color.decode("#2980b9"))
                 .addField("Version", "v1.0", false)
                 .addField("Developer", "<@169164454255263745>", true)
                 .addBlankField(true)
                 .addField("Uptime", upTimeHuman, true)
-                .addField("Github", "https://github.com/lefuturiste/statuer-api", false)
-                .build()
-        ).complete();
-    };
+                .addField("GitHub", "https://github.com/lefuturiste/statuer-api", false));
+    }
 
-    public static DiscordCommandRoute get = (event, commandComponents) -> {
-        if (commandComponents.length == 1) {
-            DiscordBot.warn(event.getChannel(), "Usage: get <path>");
+    public static void get(DiscordContext context) {
+        if (context.getParts().size() == 1) {
+            context.warn("Usage: get <path>");
             return;
         }
-        String[] pathDecomposed = commandComponents[1].split("\\.");
+        String[] pathDecomposed = context.getParts().get(1).split("\\.");
         Namespace namespace = NamespaceStore.getOneBySlug(pathDecomposed[0]);
         if (namespace == null) {
-            DiscordBot.warn(event.getChannel(), "Invalid path: namespace not found");
+            context.warn("Invalid path: namespace not found");
             return;
         }
         EmbedBuilder builder = new EmbedBuilder();
@@ -70,7 +74,7 @@ public class DiscordCommandsController {
         if (pathDecomposed.length >= 2)
             project = ProjectStore.getOneBySlugAndByNamespace(pathDecomposed[1], namespace);
         if (project == null && pathDecomposed.length >= 2) {
-            DiscordBot.warn(event.getChannel(), "Invalid path: project not found");
+            context.warn("Invalid path: project not found");
             return;
         }
         switch (pathDecomposed.length) {
@@ -106,7 +110,7 @@ public class DiscordCommandsController {
             case 3: // search for a service
                 Service service = ServiceStore.getOneBySlugAndByProject(pathDecomposed[2], project);
                 if (service == null) {
-                    DiscordBot.warn(event.getChannel(), "Invalid path: service not found");
+                    context.warn("Invalid path: service not found");
                     return;
                 }
                 builder.setTitle(service.getPath())
@@ -115,28 +119,28 @@ public class DiscordCommandsController {
                         .addField("#uuid", service.getId(), true)
                         .addField("Check period",
                                 new DurationFormatter(Duration.ofSeconds(service.getCheckPeriod())).toString(), true)
-                        .addField("Url", service.getUrl() == null ? "None": service.getUrl(), true)
-                        .addField("Type", service.getType() == null ? "None": service.getType(), true)
+                        .addField("Url", service.getUrl() == null ? "None" : service.getUrl(), true)
+                        .addField("Type", service.getType() == null ? "None" : service.getType(), true)
                         .addField("Status",
                                 service.getStatus() != null ?
                                         service.getStatus().substring(0, 1).toUpperCase() + service.getStatus().substring(1)
-                                : "None", true)
+                                        : "None", true)
                         .addField("Last incident", service.getLastIncident() == null ? "None" : DateTimeFormatter.ISO_INSTANT.format(service.getLastIncident().getFinishedAt()), true)
                         .addField("Uptime", String.valueOf(service.getUptime()), true);
 
         }
-        event.getChannel().sendMessage(builder.build()).complete();
-    };
+        context.respondEmbed(builder);
+    }
 
-    public static DiscordCommandRoute create = (event, commandComponents) -> {
-        if (commandComponents.length == 1) {
-            DiscordBot.warn(event.getChannel(), "Usage: create <path>");
+    public static void create(DiscordContext context) {
+        if (context.getParts().size() == 1) {
+            context.warn("Usage: create <path>");
             return;
         }
-        QueryStore.ObjectQueryResult objectQueryResult = QueryStore.getObjectsFromQuery(commandComponents[1]);
+        QueryStore.ObjectQueryResult objectQueryResult = QueryStore.getObjectsFromQuery(context.getParts().get(1));
 
         if (objectQueryResult == null) {
-            DiscordBot.warn(event.getChannel(), "Invalid Path");
+            context.warn("Invalid Path");
             return;
         }
 
@@ -176,22 +180,22 @@ public class DiscordCommandsController {
                 }
             }
         }
-        event.getChannel().sendMessage("Entities created: " + createdCount).complete();
-    };
+        context.success("Entities created: " + createdCount);
+    }
 
-    public static DiscordCommandRoute edit = (event, commandComponents) -> {
-        if (commandComponents.length <= 2) {
-            DiscordBot.usage(event.getChannel(), "Usage: edit <path> key=value key1=value1 ...");
+    public static void edit(DiscordContext context) {
+        if (context.getParts().size() <= 2) {
+            context.usageString("Usage: edit <path> key=value key1=value1 ...");
             return;
         }
-        QueryStore.ObjectQueryResult objectQueryResult = QueryStore.getObjectsFromQuery(commandComponents[1]);
+        QueryStore.ObjectQueryResult objectQueryResult = QueryStore.getObjectsFromQuery(context.getParts().get(1));
 
         if (objectQueryResult == null) {
-            DiscordBot.warn(event.getChannel(), "Invalid path");
+            context.warn("Invalid path");
             return;
         }
         Map<String, String> parameters = new HashMap<>();
-        for (String component: Arrays.copyOfRange(commandComponents, 2, commandComponents.length)) {
+        for (String component : Arrays.copyOfRange(context.getPartsAsArray(), 2, context.getParts().size())) {
             String[] parameterComponents = component.split("=");
             parameters.put(parameterComponents[0], parameterComponents[1]);
         }
@@ -239,29 +243,29 @@ public class DiscordCommandsController {
                 objectQueryResult.namespace.setImageUrl(parameters.get("imageUrl"));
             NamespaceStore.persist(objectQueryResult.namespace);
         } else {
-            DiscordBot.warn(event.getChannel(), "Invalid path: entity not found");
+            context.warn("Invalid path: entity not found");
             return;
         }
 
-        DiscordBot.success(event.getChannel());
-    };
+        context.success();
+    }
 
-    public static DiscordCommandRoute delete = (event, commandComponents) -> {
-        if (commandComponents.length == 1) {
-            DiscordBot.warn(event.getChannel(), "Usage: delete <path>");
+    public static void delete(DiscordContext context) {
+        if (context.getParts().size() == 1) {
+            context.warn("Usage: delete <path>");
             return;
         }
-        String[] pathDecomposed = commandComponents[1].split("\\.");
+        String[] pathDecomposed = context.getParts().get(1).split("\\.");
         Namespace namespace = NamespaceStore.getOneBySlug(pathDecomposed[0]);
         if (namespace == null) {
-            DiscordBot.warn(event.getChannel(), "Invalid path: namespace not found");
+            context.warn("Invalid path: namespace not found");
             return;
         }
         Project project = null;
         if (pathDecomposed.length >= 2)
             project = ProjectStore.getOneBySlugAndByNamespace(pathDecomposed[1], namespace);
         if (project == null && pathDecomposed.length >= 2) {
-            DiscordBot.warn(event.getChannel(), "Invalid path: project not found");
+            context.warn("Invalid path: project not found");
             return;
         }
         int deletedCount = 0;
@@ -275,11 +279,11 @@ public class DiscordCommandsController {
             case 3:
                 Service service = ServiceStore.getOneBySlugAndByProject(pathDecomposed[2], project);
                 if (service == null) {
-                    DiscordBot.warn(event.getChannel(), "Invalid path: service not found");
+                    context.warn("Invalid path: service not found");
                     return;
                 }
                 deletedCount = ServiceStore.delete(service);
         }
-        event.getChannel().sendMessage("Entities deleted: " + deletedCount).complete();
-    };
+        context.success("Entities deleted: " + deletedCount);
+    }
 }

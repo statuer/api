@@ -23,6 +23,11 @@ public class DiscordBot {
 
     private static List<String> managerCommands = Arrays.asList("create", "edit", "delete");
 
+    private String[][] allowedCommands = {
+            {"ping"}, {"help"}, {"about"}, {"debug"},
+            {"get", "view"}, {"create", "store"}, {"edit", "update", "set"}, {"delete", "del", "remove"}
+    };
+
     DiscordBot(String clientId, String token) {
         this.clientId = clientId;
         //  https://discordapp.com/oauth2/authorize?client_id=INSERT_CLIENT_ID_HERE&scope=bot&permissions=0
@@ -46,26 +51,6 @@ public class DiscordBot {
         return "https://discordapp.com/oauth2/authorize?client_id=" + clientId + "&scope=bot&permissions=" + permissionInteger;
     }
 
-    public static void warn(MessageChannel channel) {
-        warn(channel, "An unknown error as occurred");
-    }
-
-    public static void success(MessageChannel channel) {
-        success(channel, "Success!");
-    }
-
-    public static void success(MessageChannel channel, String message) {
-        channel.sendMessage(":white_check_mark: " + message).complete();
-    }
-
-    public static void warn(MessageChannel channel, String message) {
-        channel.sendMessage(":warning: " + message).complete();
-    }
-
-    public static void usage(MessageChannel channel, String message) {
-        channel.sendMessage(":interrobang: " + message).complete();
-    }
-
     private static void error(MessageChannel channel, Exception exception) {
         EmbedBuilder builder = new EmbedBuilder().setTitle(":red_circle: Exception occurred!");
         StringBuilder description = new StringBuilder("**" + exception.toString() + "** \n");
@@ -80,6 +65,7 @@ public class DiscordBot {
             try {
                 if (!event.isFromType(ChannelType.PRIVATE)) {
                     Message message = event.getMessage();
+                    DiscordContext context = new DiscordContext(event);
                     if (message.getContentDisplay().length() > 2) {
 
                         String messagePrefix = message.getContentDisplay().substring(0, 2);
@@ -91,75 +77,88 @@ public class DiscordBot {
                                         messagePrefix.equals("##")
                                 ) {
                             String rawCommand = message.getContentDisplay().substring(2);
-                            String[] commandComponents = rawCommand.split(" ");
+                            String[] spacedParts = rawCommand.split(" ");
 
                             // verify permission
-                            if (managerCommands.contains(commandComponents[0]) &&
+                            if (managerCommands.contains(spacedParts[0]) &&
                                     event.getMember().getRoles().stream().filter(
                                             role -> DiscordBot.managerRoles.contains(role.getName())
                                     ).collect(Collectors.toList()).size() == 0) {
-                                DiscordBot.warn(event.getChannel(), "Get the fuck out of my store, we are closed (permission issue)");
+                                context.warn("Get the fuck out of my store, we are closed (permission issue)");
                                 return;
                             }
 
                             // 'create' 'param1="something' 'else"'
                             // we look for components with quotes
                             StringBuilder pair = null;
-                            ArrayList<String> newCommandComponents = new ArrayList<>();
-                            for (String commandComponent : commandComponents) {
+                            ArrayList<String> commandParts = new ArrayList<>();
+                            for (String commandComponent : spacedParts) {
                                 if (commandComponent.indexOf('"') != -1 && pair == null) {
                                     pair = new StringBuilder(commandComponent);
                                 } else if (commandComponent.indexOf('"') != -1 && pair != null) {
-                                    newCommandComponents.add(
+                                    commandParts.add(
                                             pair.toString().replaceAll("\"", "") +
-                                            ' ' + commandComponent.replaceAll("\"", "")
+                                                    ' ' + commandComponent.replaceAll("\"", "")
                                     );
                                     pair = null;
                                 } else if (pair != null) {
                                     pair.append(" ").append(commandComponent);
                                 } else {
-                                    newCommandComponents.add(commandComponent);
+                                    commandParts.add(commandComponent);
                                 }
                             }
                             if (pair != null) {
-                                newCommandComponents.add(pair.toString().replaceAll("\"", ""));
+                                commandParts.add(pair.toString().replaceAll("\"", ""));
                             }
+                            context.setParts(commandParts);
 
                             // System.out.println(newCommandComponents);
-                            commandComponents = newCommandComponents.toArray(new String[0]);
-                            switch (commandComponents[0]) {
-                                case "debug":
-                                    StringBuilder output = new StringBuilder("```\n");
-                                    for (String commandComponent : commandComponents)
-                                        output.append(commandComponent).append("\n");
-                                    output.append("```");
-                                    event.getChannel().sendMessage(output.toString()).complete();
-                                    break;
-                                case "ping":
-                                    DiscordCommandsController.ping.run(event, commandComponents);
-                                    break;
-                                case "about":
-                                    DiscordCommandsController.about.run(event, commandComponents);
-                                    break;
-                                case "help":
-                                    DiscordCommandsController.help.run(event, commandComponents);
-                                    break;
-                                case "get":
-                                    DiscordCommandsController.get.run(event, commandComponents);
-                                    break;
-                                case "create":
-                                    DiscordCommandsController.create.run(event, commandComponents);
-                                    break;
-                                case "edit":
-                                    DiscordCommandsController.edit.run(event, commandComponents);
-                                    break;
-                                case "delete":
-                                    DiscordCommandsController.delete.run(event, commandComponents);
-                                    break;
-                                default:
-                                    DiscordBot.warn(event.getChannel(), "Unknown command!");
-                                    break;
+                            String commandName = null;
+                            for (String[] command : allowedCommands) {
+                                List<String> commandAlias = Arrays.asList(command);
+                                if (commandAlias.contains(commandParts.get(0)))
+                                    commandName = commandAlias.get(0);
                             }
+                            if (commandName == null) {
+                                context.warn("Unknown command!");
+                            } else {
+                                DiscordCommandsController.class
+                                        .getDeclaredMethod(commandName, DiscordContext.class)
+                                        .invoke(DiscordCommandsController.class, context);
+                            }
+//                            switch (commandComponents[0]) {
+//                                case "debug":
+//                                    StringBuilder output = new StringBuilder("```\n");
+//                                    for (String commandComponent : commandComponents)
+//                                        output.append(commandComponent).append("\n");
+//                                    output.append("```");
+//                                    event.getChannel().sendMessage(output.toString()).complete();
+//                                    break;
+//                                case "ping":
+//                                    DiscordCommandsController.ping.run(event, commandComponents);
+//                                    break;
+//                                case "about":
+//                                    DiscordCommandsController.about.run(event, commandComponents);
+//                                    break;
+//                                case "help":
+//                                    DiscordCommandsController.help.run(event, commandComponents);
+//                                    break;
+//                                case "get":
+//                                    DiscordCommandsController.get.run(event, commandComponents);
+//                                    break;
+//                                case "create":
+//                                    DiscordCommandsController.create.run(event, commandComponents);
+//                                    break;
+//                                case "edit":
+//                                    DiscordCommandsController.edit.run(event, commandComponents);
+//                                    break;
+//                                case "delete":
+//                                    DiscordCommandsController.delete.run(event, commandComponents);
+//                                    break;
+//                                default:
+//                                    context.warn("Unknown command!");
+//                                    break;
+//                            }
                         }
                     }
                 }

@@ -48,7 +48,9 @@ public class App {
                 dotenv.get("DISCORD_BOT_TOKEN")
         ).start();
         checkThread = new CheckThread();
-        Spark.port(Integer.valueOf(Objects.requireNonNull(dotenv.get("PORT"))));
+        Spark.before((request, response) -> {
+            System.out.println(request.headers("Authorization"));
+        });
         Spark.get("/", (req, res) -> {
             res.status(200);
             return new JSONObject().put("success", true);
