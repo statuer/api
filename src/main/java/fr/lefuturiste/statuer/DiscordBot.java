@@ -65,18 +65,13 @@ public class DiscordBot {
             if (event.isFromType(ChannelType.PRIVATE) || event.getAuthor().isBot())
                 return;
 
-            DiscordContext context = new DiscordContext(event);
-            context.startLoading();
             try {
                 Message message = event.getMessage();
                 if (message.getContentDisplay().length() > 2) {
                     String messagePrefix = message.getContentDisplay().substring(0, 2);
-                    if (message.isMentioned(jda.getSelfUser()) ||
-                            messagePrefix.equals("??") ||
-                            messagePrefix.equals("%%") ||
-                            messagePrefix.equals("&&") ||
-                            messagePrefix.equals("##")
-                            ) {
+                    if (messagePrefix.equals("??")) {
+                        DiscordContext context = new DiscordContext(event);
+                        context.startLoading();
                         String rawCommand = message.getContentDisplay().substring(2);
                         String[] spacedParts = rawCommand.split(" ");
 
