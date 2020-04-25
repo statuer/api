@@ -30,6 +30,6 @@ public class HttpChecker implements CheckerInterface {
             response.close();
             code = String.valueOf(response.code());
         } catch (IOException ignored) {}
-        return code.charAt(0) == '2';
+        return !code.equals("") && code.charAt(0) == '2';
     }
 }
