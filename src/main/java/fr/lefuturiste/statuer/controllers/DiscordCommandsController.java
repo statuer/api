@@ -98,14 +98,14 @@ public class DiscordCommandsController {
                         .setDescription("A Statuer's project")
                         .setColor(Color.decode("#e74c3c"))
                         .setThumbnail(project.getImageUrl())
-                        .addField("#uuid", project.getId(), true)
+                        .addField("#uuid", project.getId(), false)
                         .addField("Path", project.getPath(), true)
                         .addField("Services count", String.valueOf(project.getServices().size()), true)
                         .addField("Services", String.join(", ",
                                 project.getServices().stream()
                                         .map(Service::getSlug)
                                         .collect(Collectors.joining(", "))),
-                                true);
+                                false);
                 break;
             case 3: // search for a service
                 Service service = ServiceStore.getOneBySlugAndByProject(pathDecomposed[2], project);
