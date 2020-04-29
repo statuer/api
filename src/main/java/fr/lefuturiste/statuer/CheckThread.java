@@ -67,7 +67,6 @@ public class CheckThread implements Runnable {
                             lastIncident.setId(UUID.randomUUID().toString());
                             lastIncident.setStartedAt(downInstant);
                             lastIncident.setService(service);
-                            service.setLastIncident(lastIncident);
                             IncidentStore.persist(lastIncident, false);
                         } else {
                             // status as changed as UP
@@ -89,6 +88,8 @@ public class CheckThread implements Runnable {
                             for (Incident incident : incidents) {
                                 if (incident.getStartedAt().isBefore(startOfRange)) {
                                     totalDownDuration = totalDownDuration.plus(Duration.between(startOfRange, incident.getFinishedAt()));
+                                } else if (incident.getFinishedAt() == null) {
+                                    totalDownDuration = totalDownDuration.plus(Duration.between(incident.getStartedAt(), Instant.now()));
                                 } else {
                                     totalDownDuration = totalDownDuration.plus(Duration.between(incident.getStartedAt(), incident.getFinishedAt()));
                                 }

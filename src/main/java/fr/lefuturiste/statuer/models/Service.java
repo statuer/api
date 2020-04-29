@@ -68,9 +68,6 @@ public class Service {
     @OneToMany(mappedBy = "service", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<Incident> incidents = new ArrayList<>();
 
-    @OneToOne
-    private Incident lastIncident;
-
     private float uptime;
 
     public String getId() {
@@ -108,7 +105,7 @@ public class Service {
         jsonObject.put("check_period", checkPeriod);
         jsonObject.put("discord_webhook", discordWebhook);
         jsonObject.put("last_checked_at", lastCheckAt != null ? lastCheckAt.toString() : null);
-        jsonObject.put("last_incident", lastIncident != null ? lastIncident.toString() : null);
+        jsonObject.put("incidents", incidents.size());
         jsonObject.put("uptime", uptime);
         jsonObject.put("timeout", timeout);
         if (deep == 1) {
@@ -198,11 +195,7 @@ public class Service {
     }
 
     public Incident getLastIncident() {
-        return lastIncident;
-    }
-
-    public void setLastIncident(Incident lastIncident) {
-        this.lastIncident = lastIncident;
+        return incidents.get(incidents.size() - 1);
     }
 
     public float getUptime() {

@@ -1,5 +1,6 @@
 package fr.lefuturiste.statuer.stores;
 
+import fr.lefuturiste.statuer.models.Incident;
 import fr.lefuturiste.statuer.models.Project;
 import fr.lefuturiste.statuer.models.Service;
 
@@ -43,5 +44,18 @@ public class ServiceStore extends Store {
         } catch (NoResultException e) {
             return null;
         }
+    }
+
+    /**
+     * Will delete recursively the service and its incidents
+     *
+     * @param service Service
+     */
+    public static int delete(Service service) {
+        int entitiesDeleted = 0;
+        entitiesDeleted += Store.delete(service);
+        for (Incident incident: service.getIncidents())
+            entitiesDeleted += IncidentStore.delete(incident);
+        return entitiesDeleted;
     }
 }
