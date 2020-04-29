@@ -42,10 +42,10 @@ public class CheckThread implements Runnable {
         while (true) {
             for (Service service : services) {
                 if (service.getUrl() == null || service.getUrl().equals("")) {
-                    App.logger.debug("Skipped service " + service.getSlug() + " (no url)");
-                    break;
+                    App.logger.debug("Skipped service " + service.getPath() + " (no url)");
+                    continue;
                 }
-                App.logger.debug("Checking service " + service.getSlug());
+                App.logger.debug("Checking service " + service.getPath());
                 // if the time between now and last checked at is more or equal than the time of check_period go check it
                 Duration durationSinceLastCheck = Duration.between(
                         service.getLastCheckAt() != null ? service.getLastCheckAt() : Instant.now().minus(Duration.ofSeconds(service.getCheckPeriod())),
@@ -102,7 +102,7 @@ public class CheckThread implements Runnable {
                             service.setUptime(numberBigDecimal.floatValue());
                             IncidentStore.persist(lastIncident, false);
                         }
-                        App.logger.info("Status of service " + service.getSlug() + " changed to " + (isAvailable ? "UP" : "DOWN"));
+                        App.logger.info("Status of service " + service.getPath() + " changed to " + (isAvailable ? "UP" : "DOWN"));
                         // we can now notify of the incident (updated or created)
                         discordNotifier.notify(lastIncident);
                         ServiceStore.persist(service, false);

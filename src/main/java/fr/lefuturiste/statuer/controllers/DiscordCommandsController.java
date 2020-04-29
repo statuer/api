@@ -120,7 +120,7 @@ public class DiscordCommandsController {
                 builder.setTitle(service.getPath())
                         .setDescription("A Statuer's service")
                         .setColor(Color.decode("#e74c3c"))
-                        .addField("#uuid", service.getId(), true)
+                        .addField("#uuid", service.getId(), false)
                         .addField("Check period",
                                 new DurationFormatter(Duration.ofSeconds(service.getCheckPeriod())).toString(), true)
                         .addField("Url", service.getUrl() == null ? "None" : service.getUrl(), true)
@@ -180,6 +180,7 @@ public class DiscordCommandsController {
                     service.setSlug(objectQueryResult.serviceSlug);
                     service.setProject(project);
                     ServiceStore.persist(service);
+                    App.notifyUpdateOnService();
                     createdCount++;
                 }
             }
@@ -188,8 +189,9 @@ public class DiscordCommandsController {
     }
 
     public static void edit(DiscordContext context) {
+        String usage = "Usage: edit <path> key=value key1=value1 ...";
         if (context.getParts().size() <= 2) {
-            context.usageString("Usage: edit <path> key=value key1=value1 ...");
+            context.usageString(usage);
             return;
         }
         QueryStore.ObjectQueryResult objectQueryResult = QueryStore.getObjectsFromQuery(context.getParts().get(1));
@@ -201,7 +203,12 @@ public class DiscordCommandsController {
         Map<String, String> parameters = new HashMap<>();
         for (String component : Arrays.copyOfRange(context.getPartsAsArray(), 2, context.getParts().size())) {
             String[] parameterComponents = component.split("=");
-            parameters.put(parameterComponents[0], parameterComponents[1]);
+            if (parameterComponents.length == 2)
+                parameters.put(parameterComponents[0], parameterComponents[1]);
+        }
+        if (parameters.size() == 0) {
+            context.usageString(usage);
+            return;
         }
         if (objectQueryResult.service != null) {
             // edit service
@@ -226,6 +233,7 @@ public class DiscordCommandsController {
                 objectQueryResult.service.setUrl(parameters.get("url"));
             }
             ServiceStore.persist(objectQueryResult.service);
+            App.notifyUpdateOnService();
         } else if (objectQueryResult.project != null) {
             // edit project
             if (parameters.containsKey("slug"))
