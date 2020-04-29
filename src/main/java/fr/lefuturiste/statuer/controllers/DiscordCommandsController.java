@@ -77,6 +77,10 @@ public class DiscordCommandsController {
             context.warn("Invalid path: project not found");
             return;
         }
+        if (pathDecomposed.length > 3) {
+            context.warn("Invalid path: a path cannot have more than 3 parts");
+            return;
+        }
         switch (pathDecomposed.length) {
             case 1: // show namespace details
                 builder.setTitle(namespace.getName())
@@ -266,6 +270,10 @@ public class DiscordCommandsController {
             project = ProjectStore.getOneBySlugAndByNamespace(pathDecomposed[1], namespace);
         if (project == null && pathDecomposed.length >= 2) {
             context.warn("Invalid path: project not found");
+            return;
+        }
+        if (pathDecomposed.length > 3) {
+            context.warn("Invalid path: a path cannot have more than 3 parts");
             return;
         }
         int deletedCount = 0;
