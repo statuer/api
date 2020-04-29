@@ -195,7 +195,7 @@ public class Service {
     }
 
     public Incident getLastIncident() {
-        return incidents.get(incidents.size() - 1);
+        return incidents.size() == 0 ? null : incidents.get(incidents.size() - 1);
     }
 
     public float getUptime() {
