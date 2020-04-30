@@ -14,26 +14,31 @@ import java.util.Objects;
 
 public class App {
     private static CheckThread checkThread;
-    public static Logger logger = LoggerFactory.getLogger(App.class);
+    public static Logger logger;
     private static long startTime;
 
     public static void main(String[] args) {
+        System.setProperty(
+                "org.slf4j.simpleLogger.defaultLogLevel",
+                System.getenv("LOG_LEVEL") == null ? "info" : System.getenv("LOG_LEVEL")
+        );
+        logger = LoggerFactory.getLogger(App.class);
         startTime = System.currentTimeMillis();
-        logger.info("Starting application...");
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing()
                 .directory(System.getProperty("user.dir"))
                 .load();
         String[] requiredKeys = {"PORT", "MYSQL_CONNECTION_URL", "MYSQL_USERNAME", "MYSQL_PASSWORD", "DISCORD_BOT_TOKEN", "DISCORD_CLIENT_ID"};
         ArrayList<String> missingKeys = new ArrayList<>();
-        for (String key: requiredKeys) {
+        for (String key : requiredKeys) {
             if (dotenv.get(key) == null)
                 missingKeys.add(key);
         }
         if (!missingKeys.isEmpty()) {
-            System.err.println("ERR: Missing keys in environment variables");
-            System.err.println("ERR: These environments keys are missing: " + missingKeys.toString());
+            logger.error("Missing keys in environment variables");
+            logger.error("These environments keys are missing: " + missingKeys.toString());
             return;
         }
+        logger.info("Starting application...");
         Spark.port(Integer.valueOf(Objects.requireNonNull(dotenv.get("PORT"))));
         System.setProperty("org.jboss.logging.provider", "slf4j");
         System.setProperty("user.timezone", "Europe/Paris");
@@ -48,9 +53,9 @@ public class App {
                 dotenv.get("DISCORD_BOT_TOKEN")
         ).start();
         checkThread = new CheckThread();
-        Spark.before((request, response) -> {
-            System.out.println(request.headers("Authorization"));
-        });
+//        Spark.before((request, response) -> {
+//            System.out.println(request.headers("Authorization"));
+//        });
         Spark.get("/", (req, res) -> {
             res.status(200);
             return new JSONObject().put("success", true);

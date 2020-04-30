@@ -12,3 +12,4 @@ services:
       - MYSQL_PASSWORD=password
       - DISCORD_BOT_TOKEN=discord_token
       - DISCORD_CLIENT_ID=client_id
+      - LOG_LEVEL=debug
