@@ -22,7 +22,7 @@ public class CheckThread implements Runnable {
 
     private List<Service> services;
 
-    public void updateService() {
+    void updateService() {
         App.logger.info("CheckThread was forced to update the services cache");
         services = ServiceStore.getMany();
     }
@@ -111,6 +111,9 @@ public class CheckThread implements Runnable {
                         service.setAvailable(isAvailable);
                         ServiceStore.persist(service, false);
                     }
+                    service.setLastCheckAt(Instant.now());
+                } else {
+                    App.logger.debug("Service " + service.getPath() + " already checked");
                 }
             }
 
