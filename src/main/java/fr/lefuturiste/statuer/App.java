@@ -18,15 +18,15 @@ public class App {
     private static long startTime;
 
     public static void main(String[] args) {
-        System.setProperty(
-                "org.slf4j.simpleLogger.defaultLogLevel",
-                System.getenv("LOG_LEVEL") == null ? "info" : System.getenv("LOG_LEVEL")
-        );
-        logger = LoggerFactory.getLogger(App.class);
         startTime = System.currentTimeMillis();
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing()
                 .directory(System.getProperty("user.dir"))
                 .load();
+        System.setProperty(
+                "org.slf4j.simpleLogger.defaultLogLevel",
+                Objects.requireNonNull(dotenv.get("LOG_LEVEL") == null ? "info" : dotenv.get("LOG_LEVEL"))
+        );
+        logger = LoggerFactory.getLogger(App.class);
         String[] requiredKeys = {"PORT", "MYSQL_CONNECTION_URL", "MYSQL_USERNAME", "MYSQL_PASSWORD", "DISCORD_BOT_TOKEN", "DISCORD_CLIENT_ID"};
         ArrayList<String> missingKeys = new ArrayList<>();
         for (String key : requiredKeys) {

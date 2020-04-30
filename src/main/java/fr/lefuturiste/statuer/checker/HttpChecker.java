@@ -1,5 +1,6 @@
 package fr.lefuturiste.statuer.checker;
 
+import fr.lefuturiste.statuer.App;
 import fr.lefuturiste.statuer.models.Service;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,7 +30,11 @@ public class HttpChecker implements CheckerInterface {
             response = httpClient.newCall(request).execute();
             response.close();
             code = String.valueOf(response.code());
-        } catch (IOException ignored) {}
+        } catch (IOException err) {
+            App.logger.debug("Request failed with url " + service.getUrl() + " of service: " + service.getPath());
+            App.logger.debug(err.toString());
+        }
+        App.logger.debug("Got http code '" + code + "' for service " + service.getPath() + " at url " + service.getUrl());
         return !code.equals("") && code.charAt(0) == '2';
     }
 }
