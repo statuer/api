@@ -83,7 +83,7 @@ public class DiscordCommandsController {
         }
         switch (pathDecomposed.length) {
             case 1: // show namespace details
-                builder.setTitle(namespace.getName())
+                builder.setTitle(namespace.getLabel())
                         .setDescription("A Statuer's namespace")
                         .setColor(Color.decode("#e74c3c"))
                         .setThumbnail(namespace.getImageUrl())
@@ -92,13 +92,13 @@ public class DiscordCommandsController {
                         .addField("Project count", String.valueOf(namespace.getProjects().size()), true)
                         .addField("Projects", String.join(", ",
                                 namespace.getProjects().stream()
-                                        .map(Project::getName)
+                                        .map(Project::getSlug)
                                         .collect(Collectors.joining(", "))),
                                 true);
                 break;
             case 2: // search for a project
                 assert project != null;
-                builder.setTitle(project.getName())
+                builder.setTitle(project.getLabel())
                         .setDescription("A Statuer's project")
                         .setColor(Color.decode("#e74c3c"))
                         .setThumbnail(project.getImageUrl())

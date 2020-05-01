@@ -129,4 +129,12 @@ public class Project {
     public String getPath() {
         return this.getNamespace().getSlug() + "." + this.slug;
     }
+
+    public String getLabel() {
+        if (name == null) {
+            return getPath();
+        } else {
+            return name;
+        }
+    }
 }

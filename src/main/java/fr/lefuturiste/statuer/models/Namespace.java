@@ -114,4 +114,12 @@ public class Namespace {
     public String getHidedDiscordWebpack() {
         return discordWebhook.substring(0, discordWebhook.length() - 30) + "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
     }
+
+    public String getLabel() {
+        if (name == null) {
+            return getSlug();
+        } else {
+            return getSlug();
+        }
+    }
 }
