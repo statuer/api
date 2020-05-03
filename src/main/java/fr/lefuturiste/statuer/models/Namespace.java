@@ -119,7 +119,7 @@ public class Namespace {
         if (name == null) {
             return getSlug();
         } else {
-            return getSlug();
+            return getName();
         }
     }
 }
