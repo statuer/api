@@ -14,7 +14,6 @@ import org.hibernate.validator.internal.util.logging.formatter.DurationFormatter
 
 import java.awt.*;
 import java.time.Duration;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -129,7 +128,7 @@ public class DiscordCommandsController {
                                 service.getStatus() != null ?
                                         service.getStatus().substring(0, 1).toUpperCase() + service.getStatus().substring(1)
                                         : "None", true)
-                        .addField("Last incident", service.getLastIncident() == null ? "None" : DateTimeFormatter.ISO_INSTANT.format(service.getLastIncident().getFinishedAt()), true)
+                        .addField("Last incident", service.getLastIncidentDate(), true)
                         .addField("Uptime", String.valueOf(service.getUptime()), true);
 
         }

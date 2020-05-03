@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -204,5 +205,10 @@ public class Service {
 
     public void setUptime(float uptime) {
         this.uptime = uptime;
+    }
+
+    public String getLastIncidentDate() {
+        Incident lastIncident = getLastIncident();
+        return lastIncident == null ? "None" : lastIncident.getFinishedAt() == null ? "Ongoing incident" : DateTimeFormatter.ISO_INSTANT.format(getLastIncident().getFinishedAt());
     }
 }
