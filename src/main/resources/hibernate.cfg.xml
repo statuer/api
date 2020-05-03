@@ -8,6 +8,7 @@
         <property name="show_sql">false</property>
         <property name="hbm2ddl.auto">update</property>
         <property name="connection.autoReconnect">true</property>
+        <property name="connection.autoReconnectForPools">true</property>
         <property name="connection.is-connection-validation-required">true</property>
 
         <mapping class="fr.lefuturiste.statuer.models.Namespace" />
