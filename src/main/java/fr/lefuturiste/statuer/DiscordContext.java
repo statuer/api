@@ -14,11 +14,11 @@ public class DiscordContext {
     public final Color INFO_COLOR = Color.decode("#2980B9");
     public final Color SUCCESS_COLOR = Color.decode("#27ae60");
 
-    public DiscordContext(MessageReceivedEvent event) {
+    DiscordContext(MessageReceivedEvent event) {
         this.event = event;
     }
 
-    public void startLoading() {
+    void startLoading() {
         event.getChannel().sendTyping().complete();
     }
 
@@ -62,7 +62,7 @@ public class DiscordContext {
         respond(":interrobang: " + message);
     }
 
-    public void setParts(ArrayList<String> parts) {
+    void setParts(ArrayList<String> parts) {
         this.parts = parts;
     }
 }

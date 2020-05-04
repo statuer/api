@@ -89,19 +89,19 @@ public class Project {
         this.namespace = namespace;
     }
 
-    public JSONObject toJSONObject(int deep) {
+    public JSONObject toJSONObject(int depth) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", id);
         jsonObject.put("slug", slug);
         jsonObject.put("name", name);
         jsonObject.put("discord_webhook", discordWebhook);
-        JSONArray servicesJson = new JSONArray();
-        for (Service service : getServices()) {
-            servicesJson.put(service.toJSONObject(0));
-        }
-        jsonObject.put("services", servicesJson);
-        if (deep == 1) {
-            jsonObject.put("namespace", getNamespace().toJSONObject(0));
+        if (depth >= 1) {
+            JSONArray servicesJson = new JSONArray();
+            for (Service service : getServices()) {
+                servicesJson.put(service.toJSONObject(depth - 1));
+            }
+            jsonObject.put("services", servicesJson);
+            // jsonObject.put("namespace", getNamespace().toJSONObject(0));
         }
         return jsonObject;
     }

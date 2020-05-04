@@ -12,9 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DiscordBot {
-    private JDA jda;
-
+class DiscordBot {
     private String clientId;
 
     private String token;
@@ -24,8 +22,8 @@ public class DiscordBot {
     private static List<String> managerCommands = Arrays.asList("create", "edit", "delete");
 
     private String[][] allowedCommands = {
-            {"ping"}, {"help"}, {"about"}, {"debug"},
-            {"get", "view"}, {"create", "store"}, {"edit", "update", "set"}, {"delete", "del", "remove"},
+            {"ping"}, {"help"}, {"about"}, {"debug", "debug-cmd"},
+            {"get", "view", "get-as-json", "get-json"}, {"create", "store"}, {"edit", "update", "set"}, {"delete", "del", "remove"},
             {"status"}, {"incidents"}, {"refresh"}
     };
 
@@ -37,7 +35,7 @@ public class DiscordBot {
 
     void start() {
         try {
-            jda = new JDABuilder(AccountType.BOT)
+            JDA jda = new JDABuilder(AccountType.BOT)
                     .setToken(token)
                     .addEventListener(new EventListener())
                     .buildBlocking();

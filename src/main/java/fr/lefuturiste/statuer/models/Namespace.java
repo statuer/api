@@ -82,16 +82,19 @@ public class Namespace {
         this.projects.add(project);
     }
 
-    public JSONObject toJSONObject(int deep) {
+    public JSONObject toJSONObject(int depth) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", id);
-        jsonObject.put("slug", name);
+        jsonObject.put("slug", slug);
+        jsonObject.put("discord_webhook", discordWebhook);
+        jsonObject.put("image_url", imageUrl);
         jsonObject.put("name", name);
-        JSONArray projectsJson = new JSONArray();
-        for (Project project : getProjects()) {
-            projectsJson.put(project.toJSONObject(0));
+        if (depth >= 1) {
+            JSONArray projectsJson = new JSONArray();
+            for (Project project : getProjects())
+                projectsJson.put(project.toJSONObject(depth - 1));
+            jsonObject.put("projects", projectsJson);
         }
-        jsonObject.put("projects", projectsJson);
         return jsonObject;
     }
 

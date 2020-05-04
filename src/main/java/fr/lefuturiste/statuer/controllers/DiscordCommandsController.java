@@ -12,6 +12,7 @@ import fr.lefuturiste.statuer.stores.QueryStore;
 import fr.lefuturiste.statuer.stores.ServiceStore;
 import net.dv8tion.jda.core.EmbedBuilder;
 import org.hibernate.validator.internal.util.logging.formatter.DurationFormatter;
+import org.json.JSONObject;
 
 import java.time.Duration;
 import java.time.ZoneId;
@@ -41,7 +42,7 @@ public class DiscordCommandsController {
                 .addField("??create <path>", "Create all entities of the path", false)
                 .addField("??edit <path> key1=value1 key2=value2", "Edit a path with key=value syntax", false)
                 .addField("??delete <path>", "Recursively delete a path", false)
-                .addField("??get <path>", "Get path's data", false)
+                .addField("??get <path>", "Get path's data, use get-json to get JSON instead of a embed", false)
                 .addField("??status <namespace>", "Get overall status of all the services inside the namespace", false)
                 .addField("??incidents <service-path>", "Get all the last 90 days incidents for the path", false)
                 .addField("??refresh <service-uuid>", "Force the execution of a check on a service", false)
@@ -65,7 +66,7 @@ public class DiscordCommandsController {
 
     public static void get(DiscordContext context) {
         if (context.getParts().size() == 1) {
-            context.warn("Usage: get <path>");
+            context.warn("Usage: get <path>, use get-json to get JSON instead of a embed");
             return;
         }
         String[] pathDecomposed = context.getParts().get(1).split("\\.");
@@ -84,6 +85,32 @@ public class DiscordCommandsController {
         }
         if (pathDecomposed.length > 3) {
             context.warn("Invalid path: a path cannot have more than 3 parts");
+            return;
+        }
+        Service service = null;
+        if (pathDecomposed.length == 3) {
+            service = ServiceStore.getOneBySlugAndByProject(pathDecomposed[2], project);
+            if (service == null) {
+                context.warn("Invalid path: service not found");
+                return;
+            }
+        }
+        if (context.getParts().get(0).contains("json")) {
+            JSONObject jsonResponse = new JSONObject();
+            if (pathDecomposed.length == 1)
+                jsonResponse = namespace.toJSONObject(2);
+            if (pathDecomposed.length == 2)
+                jsonResponse = project.toJSONObject(1);
+            if (pathDecomposed.length == 3)
+                jsonResponse = service.toJSONObject(1);
+            String jsonFormatted = jsonResponse.toString(4);
+            String message = "```json\n" + jsonFormatted + "\n```";
+            if (message.length() >= 2000) {
+                context.respond(":paperclip: Because discord won't let me send a 2000+ chars message, I had to send you a happy little file!");
+                context.getEvent().getChannel().sendFile(jsonFormatted.getBytes(), "data.json").complete();
+            } else {
+                context.respond(message);
+            }
             return;
         }
         switch (pathDecomposed.length) {
@@ -117,11 +144,6 @@ public class DiscordCommandsController {
                                 false);
                 break;
             case 3: // search for a service
-                Service service = ServiceStore.getOneBySlugAndByProject(pathDecomposed[2], project);
-                if (service == null) {
-                    context.warn("Invalid path: service not found");
-                    return;
-                }
                 String formattedStatus = "";
                 if (service.getStatus().equals("up"))
                     formattedStatus += ":white_check_mark: ";
@@ -328,8 +350,8 @@ public class DiscordCommandsController {
         builder.setTitle("Current status of " + namespace.getLabel());
         boolean hasIssues = false;
         StringBuilder description = new StringBuilder();
-        for (Project project: namespace.getProjects()) {
-            for (Service service: project.getServices()) {
+        for (Project project : namespace.getProjects()) {
+            for (Service service : project.getServices()) {
                 String status = "";
                 if (service.isAvailable() == null) {
                     status += ":question:";
@@ -389,25 +411,25 @@ public class DiscordCommandsController {
                 .append(service.getUptime())
                 .append("** % \n");
         DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-            .withLocale(Locale.US)
-            .withZone(ZoneId.systemDefault());
-        for (Incident incident: service.getIncidents()) {
+                .withLocale(Locale.US)
+                .withZone(ZoneId.systemDefault());
+        for (Incident incident : service.getIncidents()) {
             description
-                .append(formatter.format(incident.getStartedAt()))
-                .append(" - ")
-                .append(incident.getFinishedAt() == null ? "*Now*" : formatter.format(incident.getFinishedAt()))
-                .append(" - ");
+                    .append(formatter.format(incident.getStartedAt()))
+                    .append(" - ")
+                    .append(incident.getFinishedAt() == null ? "*Now*" : formatter.format(incident.getFinishedAt()))
+                    .append(" - ");
 
             if (incident.getFinishedAt() == null) {
                 description.append("Ongoing incident");
             } else {
                 description
-                    .append("Last for: ")
-                    .append(new DurationFormatter(Duration.between(incident.getStartedAt(), incident.getFinishedAt())).toString());
+                        .append("Last for: ")
+                        .append(new DurationFormatter(Duration.between(incident.getStartedAt(), incident.getFinishedAt())).toString());
             }
 
             description
-                .append("\n");
+                    .append("\n");
         }
         builder.setTitle("Incident on " + service.getPath())
                 .setDescription(description);
