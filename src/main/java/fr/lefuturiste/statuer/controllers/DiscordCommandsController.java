@@ -56,12 +56,14 @@ public class DiscordCommandsController {
         String upTimeHuman = String.format("%d:%02d:%02d", upTime / 3600, (upTime % 3600) / 60, (upTime % 60));
         context.respondEmbed(new EmbedBuilder()
                 .setTitle("About statuer")
+                .setThumbnail("https://raw.githubusercontent.com/statuer/api/master/UpDownBot.png")
                 .setColor(context.INFO_COLOR)
                 .addField("Version", "v1.0", false)
                 .addField("Developer", "<@169164454255263745>", true)
                 .addBlankField(true)
                 .addField("Uptime", upTimeHuman, true)
-                .addField("GitHub", "https://github.com/lefuturiste/statuer-api", false));
+                .addField("Logo made by", "<@287902677348777985>", true)
+                .addField("GitHub", "https://github.com/lefuturiste/statuer-api", true));
     }
 
     public static void get(DiscordContext context) {
