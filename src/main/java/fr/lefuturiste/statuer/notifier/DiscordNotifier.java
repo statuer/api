@@ -25,7 +25,7 @@ public class DiscordNotifier implements NotifierInterface {
         }
         if (discordWebhook != null) {
             App.logger.debug("Send a discord webhook");
-            String status = incident.getService().getAvailable() ? "up": "down";
+            String status = incident.getService().isAvailable() ? "up": "down";
             EmbedBuilder embed = new EmbedBuilder();
             embed
                     .addField("Incident id", incident.getId(), true)

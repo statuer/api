@@ -101,7 +101,7 @@ public class Service {
         jsonObject.put("slug", slug);
         jsonObject.put("url", url);
         jsonObject.put("type", type);
-        jsonObject.put("is_available", getAvailable());
+        jsonObject.put("is_available", isAvailable());
         jsonObject.put("status", status);
         jsonObject.put("check_period", checkPeriod);
         jsonObject.put("discord_webhook", discordWebhook);
@@ -147,7 +147,7 @@ public class Service {
         this.checkPeriod = checkPeriod;
     }
 
-    public Boolean getAvailable() {
+    public Boolean isAvailable() {
         return (status == null) ? null : status.equals("up");
     }
 
@@ -195,8 +195,17 @@ public class Service {
         return incidents;
     }
 
+    /**
+     * The last incident of a service is the only incident in the incident's service list who has a null finishedAt field
+     *
+     * @return Incident
+     */
     public Incident getLastIncident() {
-        return incidents.size() == 0 ? null : incidents.get(incidents.size() - 1);
+        for (Incident incident : incidents) {
+            if (incident.getFinishedAt() == null)
+                return incident;
+        }
+        return null;
     }
 
     public float getUptime() {

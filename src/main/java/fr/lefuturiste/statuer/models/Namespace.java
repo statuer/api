@@ -116,10 +116,6 @@ public class Namespace {
     }
 
     public String getLabel() {
-        if (name == null) {
-            return getSlug();
-        } else {
-            return getName();
-        }
+        return name == null ? getSlug() : getName();
     }
 }

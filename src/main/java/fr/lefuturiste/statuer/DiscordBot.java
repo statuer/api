@@ -25,7 +25,8 @@ public class DiscordBot {
 
     private String[][] allowedCommands = {
             {"ping"}, {"help"}, {"about"}, {"debug"},
-            {"get", "view"}, {"create", "store"}, {"edit", "update", "set"}, {"delete", "del", "remove"}
+            {"get", "view"}, {"create", "store"}, {"edit", "update", "set"}, {"delete", "del", "remove"},
+            {"status"}, {"incidents"}, {"refresh"}
     };
 
     DiscordBot(String clientId, String token) {

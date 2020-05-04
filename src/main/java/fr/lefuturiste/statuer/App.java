@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class App {
-    private static CheckThread checkThread;
+    public static CheckThread checkThread;
     public static Logger logger;
     private static long startTime;
 
