@@ -21,7 +21,7 @@ public class HibernateService {
     public static EntityManager getEntityManager() {
         if (entityManager == null) {
             Configuration configuration = new Configuration().configure();
-            configuration.setProperty("hibernate.connection.url", connectionUrl);
+            configuration.setProperty("hibernate.connection.url", connectionUrl + "?autoReconnect=true&useSSL=false");
             configuration.setProperty("hibernate.connection.username", username);
             configuration.setProperty("hibernate.connection.password", password);
             String debugConfig = "Hibernate settings " +
