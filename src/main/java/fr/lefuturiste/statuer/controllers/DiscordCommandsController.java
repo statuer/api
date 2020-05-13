@@ -23,6 +23,17 @@ import java.util.stream.Collectors;
 
 public class DiscordCommandsController {
 
+    public static Project queryProject(String[] pathDecomposed, Namespace namespace, DiscordContext context) {
+        Project project = null;
+        if (pathDecomposed.length >= 2)
+            project = ProjectStore.getOneBySlugAndByNamespace(pathDecomposed[1], namespace);
+        if (project == null && pathDecomposed.length >= 2)
+            context.warn("Invalid path: project not found");
+        if (pathDecomposed.length > 3)
+            context.warn("Invalid path: a path cannot have more than 3 parts");
+        return project;
+    }
+
     public static void ping(DiscordContext context) {
         context.respond("Pong!");
     }
@@ -78,17 +89,9 @@ public class DiscordCommandsController {
             return;
         }
         EmbedBuilder builder = new EmbedBuilder();
-        Project project = null;
-        if (pathDecomposed.length >= 2)
-            project = ProjectStore.getOneBySlugAndByNamespace(pathDecomposed[1], namespace);
-        if (project == null && pathDecomposed.length >= 2) {
-            context.warn("Invalid path: project not found");
+        Project project = queryProject(pathDecomposed, namespace, context);
+        if (project == null)
             return;
-        }
-        if (pathDecomposed.length > 3) {
-            context.warn("Invalid path: a path cannot have more than 3 parts");
-            return;
-        }
         Service service = null;
         if (pathDecomposed.length == 3) {
             service = ServiceStore.getOneBySlugAndByProject(pathDecomposed[2], project);
@@ -131,7 +134,6 @@ public class DiscordCommandsController {
                                 true);
                 break;
             case 2: // search for a project
-                assert project != null;
                 builder.setTitle(project.getLabel())
                         .setDescription("A Statuer's project")
                         .setColor(context.ERROR_COLOR)
@@ -160,11 +162,12 @@ public class DiscordCommandsController {
                                 new DurationFormatter(Duration.ofSeconds(service.getCheckPeriod())).toString(), true)
                         .addField("Url", service.getUrl() == null ? "None" : service.getUrl(), true)
                         .addField("Type", service.getType() == null ? "None" : service.getType(), true)
+                        .addField("Timeout", new DurationFormatter(Duration.ofSeconds(service.getTimeout())).toString(), true)
                         .addField("Status",
                                 service.getStatus() != null ? formattedStatus : "None", true)
                         .addField("Last incident", service.getLastIncidentDate(), true)
                         .addField("Incidents", service.getIncidents().size() == 0 ? "None" : String.valueOf(service.getIncidents().size()), true)
-                        .addField("Uptime (last 90 days)", String.valueOf(service.getUptime()) + " %", true);
+                        .addField("Uptime (last 90 days)", service.getUptime() + " %", true);
 
         }
         context.respondEmbed(builder);
@@ -255,11 +258,11 @@ public class DiscordCommandsController {
                 String[] periodComponents = rawPeriod.split(" ");
                 for (String component : periodComponents) {
                     if (component.contains("s"))
-                        period += Integer.valueOf(component.replace("s", ""));
+                        period += Integer.parseInt(component.replace("s", ""));
                     if (component.contains("m"))
-                        period += Integer.valueOf(component.replace("m", "")) * 60;
+                        period += Integer.parseInt(component.replace("m", "")) * 60;
                     if (component.contains("h"))
-                        period += Integer.valueOf(component.replace("h", "")) * 3600;
+                        period += Integer.parseInt(component.replace("h", "")) * 3600;
                 }
                 objectQueryResult.service.setCheckPeriod(period);
             }
@@ -307,17 +310,9 @@ public class DiscordCommandsController {
             context.warn("Invalid path: namespace not found");
             return;
         }
-        Project project = null;
-        if (pathDecomposed.length >= 2)
-            project = ProjectStore.getOneBySlugAndByNamespace(pathDecomposed[1], namespace);
-        if (project == null && pathDecomposed.length >= 2) {
-            context.warn("Invalid path: project not found");
+        Project project = queryProject(pathDecomposed, namespace, context);
+        if (project == null)
             return;
-        }
-        if (pathDecomposed.length > 3) {
-            context.warn("Invalid path: a path cannot have more than 3 parts");
-            return;
-        }
         int deletedCount = 0;
         switch (pathDecomposed.length) {
             case 1:

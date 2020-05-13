@@ -57,7 +57,7 @@ public class Service {
     /**
      * The network timeout to specify when the checker will give up and set the service as down
      */
-    private int timeout;
+    private Integer timeout;
 
     private Instant lastCheckAt;
 
@@ -115,7 +115,7 @@ public class Service {
         return jsonObject;
     }
 
-    public int getTimeout() {
+    public long getTimeout() {
         return timeout;
     }
 
