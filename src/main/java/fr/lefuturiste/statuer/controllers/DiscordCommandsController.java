@@ -90,7 +90,7 @@ public class DiscordCommandsController {
         }
         EmbedBuilder builder = new EmbedBuilder();
         Project project = queryProject(pathDecomposed, namespace, context);
-        if (project == null)
+        if (pathDecomposed.length >= 2 && project == null)
             return;
         Service service = null;
         if (pathDecomposed.length == 3) {
