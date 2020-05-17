@@ -48,6 +48,7 @@ public class App {
                 dotenv.get("MYSQL_PASSWORD")
         );
         HibernateService.getEntityManager();
+        HibernateService.launchConnexionFailurePreventerUtil();
         new DiscordBot(
                 dotenv.get("DISCORD_CLIENT_ID"),
                 dotenv.get("DISCORD_BOT_TOKEN")
