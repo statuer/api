@@ -50,16 +50,16 @@ public class HibernateService {
 
     public static void launchConnexionFailurePreventerUtil()
     {
-        System.out.println("launchConnexionFailurePreventerUtil called");
+        //System.out.println("launchConnexionFailurePreventerUtil called");
         long duration = Duration.ofMinutes(5).toMillis();
-        System.out.println("launchConnexionFailurePreventerUtil with duration " + String.valueOf(duration));
+        //System.out.println("launchConnexionFailurePreventerUtil with duration " + String.valueOf(duration));
         Timer timer = new Timer();
         timer.schedule(new TimerTask(){
             @Override
             public void run() {
-                System.out.println("REFRESH_CONNEXION");
-                System.out.println("REFRESH_CONNEXION_DATABASE");
-                System.out.println("RECONNECTION");
+//                System.out.println("REFRESH_CONNEXION");
+//                System.out.println("REFRESH_CONNEXION_DATABASE");
+//                System.out.println("RECONNECTION");
                 HibernateService.refreshConnexion();
             }
         }, 0, duration);
