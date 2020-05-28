@@ -415,6 +415,8 @@ public class DiscordCommandsController {
                     .append(formatter.format(incident.getStartedAt()))
                     .append(" - ")
                     .append(incident.getFinishedAt() == null ? "*Now*" : formatter.format(incident.getFinishedAt()))
+                    .append(" - ")
+                    .append(incident.getReason() == null ? "null" : incident.getReason().getMessage())
                     .append(" - ");
 
             if (incident.getFinishedAt() == null) {

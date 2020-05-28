@@ -9,6 +9,9 @@ public class IncidentReasonConverter implements AttributeConverter<IncidentReaso
 
     @Override
     public String convertToDatabaseColumn(IncidentReason reason) {
+        if (reason == null) {
+            return null;
+        }
         return new JSONObject()
                 .put("code", reason.getCode())
                 .put("message", reason.getMessage())
