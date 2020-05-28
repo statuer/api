@@ -21,8 +21,7 @@ import static fr.lefuturiste.statuer.HibernateService.getEntityManager;
 public class CheckThread implements Runnable {
 
     private List<Service> services;
-    private HttpChecker httpChecker;
-    private DiscordNotifier discordNotifier;
+    private final DiscordNotifier discordNotifier;
 
     void updateService() {
         App.logger.info("CheckThread was forced to update the services cache");
@@ -30,7 +29,6 @@ public class CheckThread implements Runnable {
     }
 
     CheckThread() {
-        httpChecker = new HttpChecker();
         discordNotifier = new DiscordNotifier();
     }
 
@@ -59,12 +57,11 @@ public class CheckThread implements Runnable {
     /**
      * Will check a specified service, return true if the service's status changed
      *
-     * @param service service to check
+     * @param service      service to check
      * @param ignorePeriod if true, the service check period is ignored
      * @return boolean
      */
-    public boolean checkService(Service service, boolean ignorePeriod)
-    {
+    public boolean checkService(Service service, boolean ignorePeriod) {
         boolean statusChanged = false;
         if (service.getUrl() == null || service.getUrl().equals("")) {
             App.logger.debug("Skipped service " + service.getPath() + " (no url)");
@@ -80,7 +77,8 @@ public class CheckThread implements Runnable {
                 App.logger.debug("Service was forced to be checked by ignoring period");
             else
                 App.logger.debug("This service was not checked since: " + durationSinceLastCheck.getSeconds());
-            boolean isAvailable = httpChecker.isAvailable(service);
+            HttpChecker checker = new HttpChecker();
+            boolean isAvailable = checker.isAvailable(service);
             App.logger.debug("Service available: " + isAvailable);
             if ((service.isAvailable() != null && service.isAvailable() != isAvailable) || (service.isAvailable() == null && !isAvailable)) {
                 service.setAvailable(isAvailable);
@@ -95,12 +93,14 @@ public class CheckThread implements Runnable {
                     lastIncident.setId(UUID.randomUUID().toString());
                     lastIncident.setStartedAt(downInstant);
                     lastIncident.setService(service);
+                    lastIncident.setReason(checker.getReason());
                 } else {
                     // status as changed as UP
                     // we can update our incident to indicate the end of the incident
                     lastIncident = service.getLastIncident();
                     lastIncident.setFinishedAt(Instant.now());
                 }
+                // App.logger.debug(lastIncident.getReason() == null ? "incident null" : lastIncident.getReason().toString());
                 IncidentStore.persist(lastIncident, false);
                 // since the incident is finished we can update the down time percentage of this service (last 90d)
                 // fetch all the last 90d incident for this service

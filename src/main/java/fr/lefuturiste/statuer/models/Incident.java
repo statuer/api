@@ -1,5 +1,7 @@
 package fr.lefuturiste.statuer.models;
 
+import fr.lefuturiste.statuer.models.type.IncidentReason;
+import fr.lefuturiste.statuer.models.type.IncidentReasonConverter;
 import org.json.JSONObject;
 
 import javax.persistence.*;
@@ -25,6 +27,15 @@ public class Incident {
      * A name to describe the incident eg. "CloudFlare maintenance"
      */
     private String name;
+
+    /**
+     * A json encoded object that describe the reason of the incident
+     * reason: invalid-code|timeout|failed
+     * message: Got 200 expected 400 status code
+     * message: Time limit exceeded (2000ms)
+     */
+    @Convert(converter = IncidentReasonConverter.class)
+    private IncidentReason reason;
 
     private String description;
 
@@ -94,6 +105,14 @@ public class Incident {
         this.service = service;
     }
 
+    public IncidentReason getReason() {
+        return reason;
+    }
+
+    public void setReason(IncidentReason reason) {
+        this.reason = reason;
+    }
+
     public JSONObject toJSONObject(int deep) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", id);
@@ -107,5 +126,4 @@ public class Incident {
         }
         return jsonObject;
     }
-
 }

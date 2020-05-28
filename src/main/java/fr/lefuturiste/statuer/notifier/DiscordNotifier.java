@@ -40,7 +40,10 @@ public class DiscordNotifier implements NotifierInterface {
                 long s = duration.getSeconds();
                 embed.addField("Estimated down time", String.format("%d:%02d:%02d", s/3600, (s%3600)/60, (s%60)), true);
             } else {
-                embed.setColor(Color.decode("#e74c3c")).setTitle("New incident!");
+                embed
+                    .addField("Reason", incident.getReason().getMessage(), false)
+                    .setColor(Color.decode("#e74c3c"))
+                    .setTitle("New incident!");
             }
             WebhookClient webhookClient = new WebhookClientBuilder(discordWebhook).build();
             webhookClient.send(embed.build());

@@ -14,9 +14,11 @@ import java.util.Objects;
 
 public class App {
     public static CheckThread checkThread;
-    public static Logger logger;
-    private static long startTime;
 
+    public static Logger logger;
+
+    private static long startTime;
+    
     public static void main(String[] args) {
         startTime = System.currentTimeMillis();
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing()
