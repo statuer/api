@@ -1,8 +1,6 @@
 package fr.lefuturiste.statuer;
 
-import fr.lefuturiste.statuer.models.Service;
 import org.hibernate.validator.internal.engine.path.PathImpl;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.validation.ConstraintViolation;
