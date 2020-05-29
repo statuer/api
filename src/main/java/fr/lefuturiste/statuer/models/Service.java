@@ -194,6 +194,10 @@ public class Service {
         return incidents;
     }
 
+    public void setIncidents(Set<Incident> incidents) {
+        this.incidents = incidents;
+    }
+
     /**
      * The last incident of a service is the only incident in the incident's service list who has a null finishedAt field
      *

@@ -57,6 +57,7 @@ public class DiscordCommandsController {
                 .addField("??status <namespace>", "Get overall status of all the services inside the namespace", false)
                 .addField("??incidents <service-path>", "Get all the last 90 days incidents for the path", false)
                 .addField("??refresh <service-uuid>", "Force the execution of a check on a service", false)
+                .addField("??reset <service-uuid>", "Reset the uptime and delete all incidents of a service", false)
                 .addField("??about", "Get bot's meta data", false)
                 .addField("??ping", "Ping bot", false)
         );
@@ -374,7 +375,7 @@ public class DiscordCommandsController {
     }
 
     public static void incidents(DiscordContext context) {
-        if (context.getParts().size() == 1) {
+        if (context.getParts().size() != 2) {
             context.warn("Usage: incidents <service-path>");
             return;
         }
@@ -437,7 +438,7 @@ public class DiscordCommandsController {
     }
 
     public static void refresh(DiscordContext context) {
-        if (context.getParts().size() == 1) {
+        if (context.getParts().size() != 2) {
             context.warn("Usage: incidents <service-uuid>");
             return;
         }
@@ -451,5 +452,27 @@ public class DiscordCommandsController {
             context.success("The service was checked and we detected a change in the status, now it's " + service.getStatus() + ".");
         else
             context.success("The service was checked but we didn't detected any changes in the status, it's " + service.getStatus() + " like before.");
+    }
+
+
+    public static void reset(DiscordContext context) {
+        if (context.getParts().size() != 2) {
+            context.warn("Usage: reset <service-uuid>");
+            return;
+        }
+        Service service = ServiceStore.getOne(UUID.fromString(context.getParts().get(1)));
+        if (service == null) {
+            context.warn("Invalid UUID: service not found, make sure to use a UUID and not a path!");
+            return;
+        }
+        int incidentCount = service.getIncidents().size();
+        service.setIncidents(Collections.emptySet());
+
+        service.setUptime(0);
+        service.setStatus(null);
+        service.setLastCheckAt(null);
+        service.setLastDownAt(null);
+
+        context.success("Successfully deleted all " + incidentCount + " incidents. The fields uptime, lastCheckAt, lastDownAt and status were also reseted to their original values.");
     }
 }
