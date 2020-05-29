@@ -7,8 +7,7 @@ import org.json.JSONObject;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 /**
  * The namespace entity represent a organization, a corporation eg. Github, Google or ONU
@@ -47,8 +46,8 @@ public class Namespace {
     /**
      * All the projects of the namespace
      */
-    @OneToMany(mappedBy = "namespace", cascade = CascadeType.REMOVE)
-    private List<Project> projects = new ArrayList<>();
+    @OneToMany(mappedBy="namespace", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
+    private Set<Project> projects;
 
     public String getId() {
         return id;
@@ -74,7 +73,7 @@ public class Namespace {
         this.slug = slug;
     }
 
-    public List<Project> getProjects() {
+    public Set<Project> getProjects() {
         return projects;
     }
 

@@ -8,8 +8,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 /**
  * The entity service represent most of the time a server like an HTTP server, a Database or all others kinds of sockets
@@ -66,8 +65,8 @@ public class Service {
     @ManyToOne
     private Project project;
 
-    @OneToMany(mappedBy = "service", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    private List<Incident> incidents = new ArrayList<>();
+    @OneToMany(mappedBy="service", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
+    private Set<Incident> incidents;
 
     private float uptime;
 
@@ -191,7 +190,7 @@ public class Service {
         this.lastDownAt = lastDownAt;
     }
 
-    public List<Incident> getIncidents() {
+    public Set<Incident> getIncidents() {
         return incidents;
     }
 

@@ -7,8 +7,7 @@ import org.json.JSONObject;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 /**
  * The project entity represent a group of service
@@ -54,8 +53,8 @@ public class Project {
     /**
      * All the services owned by the service
      */
-    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
-    private List<Service> services = new ArrayList<>();
+    @OneToMany(mappedBy="project", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
+    private Set<Service> services;
 
     public String getId() {
         return id;
@@ -122,7 +121,7 @@ public class Project {
         this.discordWebhook = discordWebhook;
     }
 
-    public List<Service> getServices() {
+    public Set<Service> getServices() {
         return services;
     }
 

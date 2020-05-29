@@ -20,14 +20,23 @@ public class GraphQLController {
             jsonObject = new JSONObject(req.body());
         } catch (JSONException exception) {
             res.status(400);
-            return new JSONObject()
-                    .put("error", "Invalid JSON input")
-                    .put("success", false);
+            return App.returnJSON(res, new JSONObject()
+                .put("error", "Invalid JSON input")
+                .put("success", false)
+            );
         }
         ExecutionInput executionInput = ExecutionInput.newExecutionInput()
                 .query(jsonObject.getString("query"))
                 .build();
         ExecutionResult executionResult = build.execute(executionInput);
-        return App.returnJSON(res, new JSONObject(executionResult.toSpecification()));
+        JSONObject result = new JSONObject(executionResult.toSpecification());
+        if (result.has("errors") && result.getJSONArray("errors").length() > 0) {
+            res.status(400);
+            result.remove("data");
+            result.put("success", false);
+        } else {
+            result.put("success", true);
+        }
+        return App.returnJSON(res, result);
     };
 }
