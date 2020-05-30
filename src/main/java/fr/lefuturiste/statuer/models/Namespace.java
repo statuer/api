@@ -7,6 +7,9 @@ import org.json.JSONObject;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import com.introproventures.graphql.jpa.query.annotation.GraphQLDescription;
+
 import java.util.Set;
 
 /**
@@ -22,31 +25,23 @@ public class Namespace {
     @NotNull
     private String id;
 
-    /**
-     * The usable slug of the namespace eg. stc or google
-     */
     @NotNull
     @NotEmpty
+    @GraphQLDescription("The usable slug of the namespace eg. stc or google")
     private String slug;
 
-    /**
-     * The full name of the namespace eg. STAN-TAb Corp. or Google Inc.
-     */
+    @GraphQLDescription("The full name of the namespace eg. STAN-TAb Corp. or Google Inc.")
     private String name;
 
-    /**
-     * A url which reference to the logo of the namespace
-     */
     @URL
+    @GraphQLDescription("The url of the logo/icon/image that illustrate this namespace")
     private String imageUrl;
 
     @URL
     private String discordWebhook;
 
-    /**
-     * All the projects of the namespace
-     */
     @OneToMany(mappedBy="namespace", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
+    @GraphQLDescription("All the projects of the namespace")
     private Set<Project> projects;
 
     public String getId() {

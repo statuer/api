@@ -7,6 +7,9 @@ import org.json.JSONObject;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import com.introproventures.graphql.jpa.query.annotation.GraphQLDescription;
+
 import java.util.Set;
 
 /**
@@ -22,37 +25,26 @@ public class Project {
     @NotNull
     private String id;
 
-    /**
-     * The usable slug of the project eg. youtube or staileu
-     * This slug is used to identify a project
-     */
     @NotNull
     @NotEmpty
+    @GraphQLDescription("The usable slug of the project eg. youtube or staileu, This slug is used to identify a project")
     private String slug;
 
-    /**
-     * The full name of the project eg. YouTube or STAIL.EU Accounts
-     */
+    @GraphQLDescription("The full name of the project eg. YouTube or STAIL.EU Accounts")
     private String name;
 
-    /**
-     * A url which reference to the logo of the project
-     */
     @URL
+    @GraphQLDescription("The url of the logo/icon/image that illustrate this project")
     private String imageUrl;
 
     @URL
     private String discordWebhook;
 
-    /**
-     * The parent namespace of the project
-     */
     @ManyToOne
+    @GraphQLDescription("The parent namespace of the project")
     private Namespace namespace;
 
-    /**
-     * All the services owned by the service
-     */
+    @GraphQLDescription("All the services owned by the project")
     @OneToMany(mappedBy="project", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
     private Set<Service> services;
 

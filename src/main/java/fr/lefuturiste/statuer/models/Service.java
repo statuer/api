@@ -6,6 +6,9 @@ import org.json.JSONObject;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import com.introproventures.graphql.jpa.query.annotation.GraphQLDescription;
+
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
@@ -23,52 +26,50 @@ public class Service {
     @NotNull
     private String id;
 
-    /**
-     * The usable slug of the service eg. api, database or frontend
-     * This slug is used to identify a service
-     */
     @NotNull
     @NotEmpty
+    @GraphQLDescription("The usable slug of the service eg. api, database or frontend, his slug is used to identify a service")
     private String slug;
 
     @URL
     private String discordWebhook;
 
+    @GraphQLDescription("UP or DOWN")
     private String status;
 
     /**
-     * The period of the check, the more this number goes up the less often the service is check
-     * The number represent the period in seconds (60,120,180,240,300,420,600,900,1800,3600)
+     * The number represent the period in seconds (eg. 60,120,180,240,300,420,600,900,1800,3600)
      */
+    @GraphQLDescription("The period of the check in seconds, the more this number goes up the less often the service is check")
     private Integer checkPeriod = 120;
 
-    /**
-     * The uri where the check thread will check if weather or not the service is up
-     */
     @URL
+    @GraphQLDescription("The uri where the check thread will check if weather or not the service is up")
     private String url;
 
-    /**
-     * The type of checker which will be used eg. http, ping, mysql etc...
-     */
+    @GraphQLDescription("The type of checker which will be used eg. http, ping, mysql etc...")
     private String type;
 
-    /**
-     * The network timeout to specify when the checker will give up and set the service as down
-     */
+    @GraphQLDescription("The network timeout to specify when the checker will give up and set the service as down")
     private Integer timeout;
 
+    @GraphQLDescription("The number of attemps before the service is declared as DOWN")
+    private Integer attempts = 3;
+
+    @GraphQLDescription("The timestamp when the service was checked for the last time")
     private Instant lastCheckAt;
 
+    @GraphQLDescription("The timestamp when the service was down for the last time")
     private Instant lastDownAt;
+
+    @GraphQLDescription("The percentage of the ratio of the UP duration over the TOTAL duration")
+    private float uptime;
 
     @ManyToOne
     private Project project;
 
     @OneToMany(mappedBy="service", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
     private Set<Incident> incidents;
-
-    private float uptime;
 
     public String getId() {
         return id;

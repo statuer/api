@@ -6,6 +6,9 @@ import org.json.JSONObject;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+
+import com.introproventures.graphql.jpa.query.annotation.GraphQLDescription;
+
 import java.time.Instant;
 
 /**
@@ -23,9 +26,7 @@ public class Incident {
     @NotNull
     private String id;
 
-    /**
-     * A name to describe the incident eg. "CloudFlare maintenance"
-     */
+    @GraphQLDescription("A non autofilled name to describe the incident eg. 'CloudFlare maintenance' (manual)")
     private String name;
 
     /**
@@ -35,18 +36,23 @@ public class Incident {
      * message: Time limit exceeded (2000ms)
      */
     @Convert(converter = IncidentReasonConverter.class)
+    @GraphQLDescription("A JSON object that describe why the checker has failed to get the service")
     private IncidentReason reason;
 
+    @GraphQLDescription("A non autofilled to describe the description of the incident (manual)")
     private String description;
 
     private String impact; // 'high' or 'low'
 
     @NotNull
+    @GraphQLDescription("A timestamp that describe when the incident started")
     private Instant startedAt;
 
+    @GraphQLDescription("A timestamp that describe when the incident finished, if null that mean that the incident is ongoing")
     private Instant finishedAt;
 
     @ManyToOne
+    @GraphQLDescription("The service which is concerned by the incident")
     private Service service;
 
     public String getId() {
