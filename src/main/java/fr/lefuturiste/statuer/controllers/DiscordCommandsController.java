@@ -150,11 +150,14 @@ public class DiscordCommandsController {
                 break;
             case 3: // search for a service
                 String formattedStatus = "";
-                if (service.getStatus().equals("up"))
+                if (service.getStatus() == null)
+                    formattedStatus = "None";
+                else if (service.getStatus().equals("up"))
                     formattedStatus += ":white_check_mark: ";
                 else if (service.getStatus().equals("down"))
                     formattedStatus += ":red_circle: ";
-                formattedStatus += service.getStatus().substring(0, 1).toUpperCase() + service.getStatus().substring(1);
+                if (service.getStatus() != null)
+                    formattedStatus += service.getStatus().substring(0, 1).toUpperCase() + service.getStatus().substring(1);
                 builder.setTitle(service.getPath())
                         .setDescription("A Statuer's service")
                         .setColor(context.ERROR_COLOR)
@@ -164,8 +167,7 @@ public class DiscordCommandsController {
                         .addField("Url", service.getUrl() == null ? "None" : service.getUrl(), true)
                         .addField("Type", service.getType() == null ? "None" : service.getType(), true)
                         .addField("Timeout", new DurationFormatter(Duration.ofSeconds(service.getTimeout())).toString(), true)
-                        .addField("Status",
-                                service.getStatus() != null ? formattedStatus : "None", true)
+                        .addField("Status", formattedStatus, true)
                         .addField("Last incident", service.getLastIncidentDate(), true)
                         .addField("Incidents", service.getIncidents().size() == 0 ? "None" : String.valueOf(service.getIncidents().size()), true)
                         .addField("Uptime (last 90 days)", service.getUptime() + " %", true);
