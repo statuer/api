@@ -115,8 +115,11 @@ public class Bot {
               // get if the command is valid
               // String usage = selectedCommand.getUsage();
               App.logger.debug(context.getParts().toString());
-              App.logger.debug(String.valueOf(selectedCommand.getRequiredArgumentsCount() + 1));
-              if (context.getParts().size() < (selectedCommand.getRequiredArgumentsCount() + 1)) {
+              //App.logger.debug(String.valueOf(selectedCommand.getRequiredArgumentsCount() + 1));
+              if (
+                context.getParts().size() < (selectedCommand.getRequiredArgumentsCount() + 1) ||
+                (context.getParts().size() > (selectedCommand.getArgumentsCount() + 1) && !selectedCommand.hasInfiniteArguments())
+              ) {
                 context.warn("Usage: " + selectedCommand.getFullUsage());
                 return;
               }
