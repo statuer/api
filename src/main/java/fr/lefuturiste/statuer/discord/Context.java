@@ -1,4 +1,4 @@
-package fr.lefuturiste.statuer;
+package fr.lefuturiste.statuer.discord;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -6,7 +6,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class DiscordContext {
+public class Context {
     private MessageReceivedEvent event;
     private ArrayList<String> parts;
 
@@ -14,7 +14,7 @@ public class DiscordContext {
     public final Color INFO_COLOR = Color.decode("#2980B9");
     public final Color SUCCESS_COLOR = Color.decode("#27ae60");
 
-    DiscordContext(MessageReceivedEvent event) {
+    Context(MessageReceivedEvent event) {
         this.event = event;
     }
 
