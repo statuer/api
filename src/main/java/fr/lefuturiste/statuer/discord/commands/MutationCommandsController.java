@@ -109,6 +109,18 @@ public class MutationCommandsController extends CommandController {
       if (parameters.containsKey("url")) {
         objectQueryResult.service.setUrl(parameters.get("url"));
       }
+      // TODO: add string to int parsing error handling
+      if (parameters.containsKey("maxAttempts")) {
+        String rawMaxAttempts = parameters.get("maxAttempts");
+        int maxAttempts = Integer.parseInt(rawMaxAttempts);
+        objectQueryResult.service.setMaxAttempts(maxAttempts);
+      }
+      // TODO: add proper duration parsing for timeout field (extract code use for checkPeriod)
+      if (parameters.containsKey("timeout")) {
+        String rawTimeout = parameters.get("timeout");
+        int timeout = Integer.parseInt(rawTimeout);
+        objectQueryResult.service.setTimeout(timeout);
+      }
       ServiceStore.persist(objectQueryResult.service);
     } else if (objectQueryResult.project != null) {
       // edit project
