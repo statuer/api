@@ -6,8 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
 
-import org.hibernate.validator.internal.util.logging.formatter.DurationFormatter;
-
+import fr.lefuturiste.statuer.DurationFormatter;
 import fr.lefuturiste.statuer.discord.Context;
 import fr.lefuturiste.statuer.models.*;
 import fr.lefuturiste.statuer.stores.*;
@@ -58,8 +57,9 @@ public class IncidentsCommandController extends CommandController {
       if (incident.getFinishedAt() == null) {
         description.append("Ongoing incident");
       } else {
-        description.append("Last for: ").append(
-            new DurationFormatter(Duration.between(incident.getStartedAt(), incident.getFinishedAt())).toString());
+        description
+          .append("Last for: ")
+          .append(DurationFormatter.format(Duration.between(incident.getStartedAt(), incident.getFinishedAt())));
       }
 
       description.append("\n");

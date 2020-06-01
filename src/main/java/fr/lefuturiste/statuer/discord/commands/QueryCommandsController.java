@@ -1,6 +1,7 @@
 package fr.lefuturiste.statuer.discord.commands;
 
 import fr.lefuturiste.statuer.App;
+import fr.lefuturiste.statuer.DurationFormatter;
 import fr.lefuturiste.statuer.discord.Context;
 import fr.lefuturiste.statuer.models.Namespace;
 import fr.lefuturiste.statuer.models.Project;
@@ -8,7 +9,6 @@ import fr.lefuturiste.statuer.models.Service;
 import fr.lefuturiste.statuer.stores.NamespaceStore;
 import fr.lefuturiste.statuer.stores.ServiceStore;
 import net.dv8tion.jda.core.EmbedBuilder;
-import org.hibernate.validator.internal.util.logging.formatter.DurationFormatter;
 import org.json.JSONObject;
 
 import java.time.Duration;
@@ -92,11 +92,10 @@ public class QueryCommandsController extends CommandController {
           .withZone(ZoneId.systemDefault());
         builder.setTitle(service.getPath()).setDescription("A Statuer's service").setColor(context.ERROR_COLOR)
             .addField("#uuid", service.getId(), false)
-            .addField("Check period", new DurationFormatter(Duration.ofSeconds(service.getCheckPeriod())).toString(),
-                true)
+            .addField("Check period", DurationFormatter.format(Duration.ofSeconds(service.getCheckPeriod())), true)
             .addField("Url", service.getUrl() == null ? "None" : service.getUrl(), true)
             .addField("Type", service.getType() == null ? "None" : service.getType(), true)
-            .addField("Timeout", new DurationFormatter(Duration.ofSeconds(service.getTimeout())).toString(), true)
+            .addField("Timeout", DurationFormatter.format(Duration.ofSeconds(service.getTimeout())), true)
             .addField("Status", formattedStatus, true).addField("Last down at", service.getLastDownAt() != null ? formatter.format(service.getLastDownAt()) : "None", true)
             .addField("Incidents",
                 service.getIncidents().size() == 0 ? "None" : String.valueOf(service.getIncidents().size()), true)
