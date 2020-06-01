@@ -48,6 +48,10 @@ public class CommandsList {
         .withDescription("Get all the last 90 days incidents for a service")
         .withUsage("<service-path>"),
 
+      new Command("incident", IncidentsCommandController.class)
+      .withDescription("Get details of a incident")
+      .withUsage("<incident-uuid>"),
+
       new Command("reset", ResetCommandController.class)
         .withDescription("Reset the uptime and delete all incidents of a service")
         .withUsage("<service-uuid>"),

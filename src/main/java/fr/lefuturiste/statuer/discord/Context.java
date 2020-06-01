@@ -30,6 +30,10 @@ public class Context {
     return parts;
   }
 
+  public String getPart(int index) {
+    return parts.get(index);
+  }
+
   public String[] getPartsAsArray() {
     return parts.toArray(new String[0]);
   }

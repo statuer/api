@@ -36,6 +36,7 @@ public class Incident {
    */
   @Convert(converter = IncidentReasonConverter.class)
   @GraphQLDescription("A JSON object that describe why the checker has failed to get the service")
+  @Column(columnDefinition="TEXT")
   private IncidentReason reason;
 
   @GraphQLDescription("A non autofilled to describe the description of the incident (manual)")

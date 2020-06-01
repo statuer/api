@@ -60,7 +60,8 @@ public class CheckThread implements Runnable {
    * @return return true if the service's status changed
    * @throws InvalidInspectionResultException
    */
-  public boolean checkService(Service service, boolean ignorePeriod) throws InvalidInspectionResultException {
+  public boolean checkService(Service service, boolean ignorePeriod)
+      throws InvalidInspectionResultException {
     service.inspect();
     boolean statusChanged = false;
     if (service.getUrl() == null || service.getUrl().equals("")) {

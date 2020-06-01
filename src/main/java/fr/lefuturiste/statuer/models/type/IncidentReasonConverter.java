@@ -12,7 +12,15 @@ public class IncidentReasonConverter implements AttributeConverter<IncidentReaso
     if (reason == null) {
       return null;
     }
-    return new JSONObject().put("code", reason.getCode()).put("message", reason.getMessage()).toString();
+    JSONObject object = new JSONObject()
+      .put("code", reason.getCode())
+      .put("message", reason.getMessage());
+
+    if (reason != null) {
+      object.put("debug", reason.getDebug());
+    }
+
+     return object.toString();
   }
 
   @Override
@@ -21,7 +29,11 @@ public class IncidentReasonConverter implements AttributeConverter<IncidentReaso
       return null;
     }
     JSONObject jsonParsed = new JSONObject(reasonJSON);
-    return new IncidentReason(jsonParsed.getString("code"), jsonParsed.getString("message"));
+    return new IncidentReason(
+      jsonParsed.getString("code"),
+      jsonParsed.getString("message"),
+      jsonParsed.has("debug") ? jsonParsed.getString("debug") : null
+    );
   }
 
 }

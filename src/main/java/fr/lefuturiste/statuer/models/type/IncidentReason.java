@@ -6,6 +6,8 @@ public class IncidentReason {
 
   private String message;
 
+  private String debug;
+
   public IncidentReason() {
   }
 
@@ -15,9 +17,10 @@ public class IncidentReason {
    * @param code    The slugged code
    * @param message A free message to describe exactly what caused the issue
    */
-  public IncidentReason(String code, String message) {
+  public IncidentReason(String code, String message, String debug) {
     this.code = code;
     this.message = message;
+    this.debug = debug;
   }
 
   @Override
@@ -35,12 +38,21 @@ public class IncidentReason {
     return this;
   }
 
+  public IncidentReason setDebug(String debug) {
+    this.debug = debug;
+    return this;
+  }
+
   public String getCode() {
     return code;
   }
 
   public String getMessage() {
     return message;
+  }
+
+  public String getDebug() {
+    return debug;
   }
 
   public boolean isEmpty() {

@@ -1,6 +1,5 @@
 package fr.lefuturiste.statuer.discord.commands;
 
-import fr.lefuturiste.statuer.App;
 import fr.lefuturiste.statuer.discord.Context;
 import fr.lefuturiste.statuer.models.Namespace;
 import fr.lefuturiste.statuer.models.Project;

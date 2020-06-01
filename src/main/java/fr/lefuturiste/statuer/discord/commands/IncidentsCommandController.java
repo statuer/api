@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
+import java.util.UUID;
 
 import fr.lefuturiste.statuer.DurationFormatter;
 import fr.lefuturiste.statuer.discord.Context;
@@ -65,6 +66,33 @@ public class IncidentsCommandController extends CommandController {
       description.append("\n");
     }
     builder.setTitle("Incident on " + service.getPath()).setDescription(description);
+
+    context.respondEmbed(builder);
+  }
+
+  public static void incident(Context context) {
+
+    Incident incident = IncidentStore.getOne(UUID.fromString(context.getPart(1)));
+    if (incident == null) {
+      context.warn("Unknown UUID");
+      return;
+    }
+    EmbedBuilder builder = new EmbedBuilder()
+      .setTitle("Detail for incident #" + context.getPart(1))
+      .setDescription("Hope it is fixed!")
+      .addField("Service path", incident.getService().getPath(), true)
+      .addField("Service url", incident.getService().getUrl(), true)
+      .addBlankField(true)
+      .addField("Started at", incident.getStartedAt().toString(), true)
+      .addField("Finished at", incident.getFinishedAt() == null ? "Ongoing": incident.getFinishedAt().toString(), true)
+      .addBlankField(true)
+      .addField("Name", incident.getName() == null ? "None" : incident.getName(), true)
+      .addField("Impact", incident.getImpact() == null ? "None" : incident.getImpact(), true)
+      .addBlankField(true)
+      .addField("Description", incident.getDescription() == null ? "None" : incident.getDescription(), false)
+      .addField("Reason code", incident.getReason() == null ? "None" : incident.getReason().getCode(), false)
+      .addField("Reason message", incident.getReason() == null ? "None" : incident.getReason().getMessage(), false)
+      .addField("Debug", (incident.getReason() == null || incident.getReason().getDebug() == null) ? "None" : incident.getReason().getDebug(), false);
 
     context.respondEmbed(builder);
   }

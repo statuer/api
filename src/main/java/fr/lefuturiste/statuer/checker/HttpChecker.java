@@ -10,6 +10,8 @@ import okhttp3.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.json.JSONObject;
+
 public class HttpChecker implements CheckerInterface {
 
   private static OkHttpClient httpClient;
@@ -17,8 +19,9 @@ public class HttpChecker implements CheckerInterface {
   private IncidentReason reason = null;
 
   public HttpChecker(int timeout) {
-    httpClient = new OkHttpClient.Builder().connectTimeout(timeout, TimeUnit.SECONDS).readTimeout(timeout, TimeUnit.SECONDS)
-        .writeTimeout(timeout, TimeUnit.SECONDS).callTimeout(timeout, TimeUnit.SECONDS).build();
+    httpClient = new OkHttpClient.Builder().connectTimeout(timeout, TimeUnit.SECONDS)
+        .readTimeout(timeout, TimeUnit.SECONDS).writeTimeout(timeout, TimeUnit.SECONDS)
+        .callTimeout(timeout, TimeUnit.SECONDS).build();
   }
 
   /**
@@ -30,12 +33,14 @@ public class HttpChecker implements CheckerInterface {
    */
   public boolean isAvailable(Service service) {
     Request request = new Request.Builder().url(service.getUrl()).build();
-    Response response;
+    Response response = null;
     String code = "";
+    String body = "";
     boolean success = true;
     IncidentReason tmpReason = new IncidentReason();
     try {
       response = httpClient.newCall(request).execute();
+      body = response.body().string();
       response.close();
       code = String.valueOf(response.code());
     } catch (IOException err) {
@@ -49,12 +54,17 @@ public class HttpChecker implements CheckerInterface {
       App.logger
           .debug("    Got http code '" + code + "' for service " + service.getPath() + " at url " + service.getUrl());
     }
-    if ((code.equals("") || code.charAt(0) != '2') && tmpReason.isEmpty()) {
+    // (code.equals("") || code.charAt(0) != '2')
+    if (tmpReason.isEmpty() && response != null && !response.isSuccessful()) {
       success = false;
       String message = "Invalid HTTP code, got " + code + " wanted 2XX";
       App.logger.debug("    " + message);
       tmpReason.setCode("http-invalid-status-code");
       tmpReason.setMessage(message);
+      JSONObject debug = new JSONObject()
+        .put("status", response.message()).put("headers", response.headers().toMultimap()).put("body", body);
+      App.logger.debug(debug.toString());
+      tmpReason.setDebug(debug.toString());
     }
     if (!success) {
       reason = tmpReason;

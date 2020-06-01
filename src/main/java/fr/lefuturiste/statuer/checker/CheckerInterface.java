@@ -1,5 +1,9 @@
 package fr.lefuturiste.statuer.checker;
 
+import java.io.IOException;
+
+import org.json.JSONException;
+
 import fr.lefuturiste.statuer.models.Service;
 
 public interface CheckerInterface {
@@ -10,5 +14,5 @@ public interface CheckerInterface {
      * @param service The service to check
      * @return boolean
      */
-    boolean isAvailable(Service service);
+    boolean isAvailable(Service service) throws JSONException, IOException;
 }
