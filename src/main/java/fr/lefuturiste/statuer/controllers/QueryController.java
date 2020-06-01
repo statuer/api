@@ -153,7 +153,6 @@ public class QueryController {
             }
 
             ServiceStore.persist(objectQueryResult.service);
-            App.notifyUpdateOnService();
         } else {
             if (objectQueryResult.serviceSlug != null) {
                 res.status(404);
@@ -179,7 +178,6 @@ public class QueryController {
                 }
 
                 ProjectStore.persist(objectQueryResult.project);
-                App.notifyUpdateOnService();
             } else {
                 if (objectQueryResult.projectSlug != null) {
                     res.status(404);
@@ -205,7 +203,6 @@ public class QueryController {
                     }
 
                     NamespaceStore.persist(objectQueryResult.namespace);
-                    App.notifyUpdateOnService();
                 } else {
                     res.status(404);
                     return new JSONObject()

@@ -46,8 +46,10 @@ public class IncidentsCommandController extends CommandController {
         .append(service.getIncidents().size() == 0 ? "zero" : String.valueOf(service.getIncidents().size()))
         .append("** incidents on this service. ").append("And with a availability of **").append(service.getUptime())
         .append("** % \n");
-    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withLocale(Locale.US)
-        .withZone(ZoneId.systemDefault());
+    DateTimeFormatter formatter = DateTimeFormatter
+      .ofLocalizedDateTime(FormatStyle.SHORT)
+      .withLocale(Locale.US)
+      .withZone(ZoneId.systemDefault());
     for (Incident incident : service.getIncidents()) {
       description.append(formatter.format(incident.getStartedAt())).append(" - ")
           .append(incident.getFinishedAt() == null ? "*Now*" : formatter.format(incident.getFinishedAt())).append(" - ")

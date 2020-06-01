@@ -18,10 +18,11 @@ public class ResetCommandController extends CommandController {
     int incidentCount = service.getIncidents().size();
     service.setIncidents(Collections.emptySet());
 
-    service.setUptime(0);
+    service.setUptime(1);
     service.setStatus(null);
     service.setLastCheckAt(null);
     service.setLastDownAt(null);
+    ServiceStore.persist(service);
 
     context.success("Successfully deleted all " + incidentCount + " incidents. The fields uptime, lastCheckAt, lastDownAt and status were also reseted to their original values.");
   }

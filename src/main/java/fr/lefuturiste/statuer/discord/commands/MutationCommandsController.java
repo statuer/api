@@ -57,7 +57,6 @@ public class MutationCommandsController extends CommandController {
           service.setSlug(objectQueryResult.serviceSlug);
           service.setProject(project);
           ServiceStore.persist(service);
-          App.notifyUpdateOnService();
           createdCount++;
         }
       }
@@ -111,7 +110,6 @@ public class MutationCommandsController extends CommandController {
         objectQueryResult.service.setUrl(parameters.get("url"));
       }
       ServiceStore.persist(objectQueryResult.service);
-      App.notifyUpdateOnService();
     } else if (objectQueryResult.project != null) {
       // edit project
       if (parameters.containsKey("slug"))

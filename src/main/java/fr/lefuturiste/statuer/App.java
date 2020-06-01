@@ -92,7 +92,7 @@ public class App {
     Spark.internalServerError(
         (req, res) -> new JSONObject().put("success", false).put("error", "Internal server error"));
     Spark.awaitInitialization();
-    while (true) {
+    while (checkThread.canRun) {
       try {
         checkThread.run();
       } catch (Exception checkThreadException) {
@@ -110,10 +110,6 @@ public class App {
   public static String returnJSON(Response response, JSONObject jsonObject) {
     response.header("Content-type", "application/json");
     return jsonObject.toString(0);
-  }
-
-  public static void notifyUpdateOnService() {
-    checkThread.updateService();
   }
 
   public static Duration getUpTime() {

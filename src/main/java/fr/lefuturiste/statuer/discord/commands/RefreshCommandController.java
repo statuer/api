@@ -3,13 +3,14 @@ package fr.lefuturiste.statuer.discord.commands;
 import java.util.UUID;
 
 import fr.lefuturiste.statuer.App;
+import fr.lefuturiste.statuer.InvalidInspectionResultException;
 import fr.lefuturiste.statuer.discord.Context;
 import fr.lefuturiste.statuer.models.Service;
 import fr.lefuturiste.statuer.stores.ServiceStore;
 
 public class RefreshCommandController extends CommandController {
 
-  public static void refresh(Context context) {
+  public static void refresh(Context context) throws InvalidInspectionResultException {
     if (context.getParts().size() != 2) {
       context.warn("Usage: incidents <service-uuid>");
       return;

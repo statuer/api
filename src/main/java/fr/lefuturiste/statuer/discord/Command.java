@@ -118,7 +118,7 @@ public class Command {
   }
 
   public void parseArguments() {
-    Pattern r = Pattern.compile("<([a-zA-Z0-9\\-_]+)>(\\?)?(\\.\\.\\.)?");
+    Pattern r = Pattern.compile("<([a-zA-Z0-9=\\-_]+)>(\\?)?(\\.\\.\\.)?");
     arguments = new HashMap<>();
     Matcher m = r.matcher(usage);
     while (m.find()) {

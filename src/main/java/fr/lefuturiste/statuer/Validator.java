@@ -10,27 +10,27 @@ import java.util.Set;
 
 public class Validator<T> {
 
-    private final Set<ConstraintViolation<T>> validationResult;
+  private final Set<ConstraintViolation<T>> validationResult;
 
-    public Validator(T model) {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        javax.validation.Validator validator = factory.getValidator();
-        validationResult = validator.validate(model);
-    }
+  public Validator(T model) {
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    javax.validation.Validator validator = factory.getValidator();
+    validationResult = validator.validate(model);
+  }
 
-    public boolean isValid() {
-        return validationResult.size() == 0;
-    }
+  public boolean isValid() {
+    return validationResult.size() == 0;
+  }
 
-    public JSONObject getJSONErrors() {
-        JSONObject jsonObject = new JSONObject();
-        for (ConstraintViolation<T> constraintViolation : validationResult) {
-            String fieldName = ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName();
-            if (!jsonObject.has(fieldName)) {
-                jsonObject.put(fieldName, constraintViolation.getMessage());
-            }
-        }
-        return jsonObject;
+  public JSONObject getJSONErrors() {
+    JSONObject jsonObject = new JSONObject();
+    for (ConstraintViolation<T> constraintViolation : validationResult) {
+      String fieldName = ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName();
+      if (!jsonObject.has(fieldName)) {
+        jsonObject.put(fieldName, constraintViolation.getMessage());
+      }
     }
+    return jsonObject;
+  }
 
 }

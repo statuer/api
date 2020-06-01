@@ -7,26 +7,15 @@ import fr.lefuturiste.statuer.notifier.DiscordNotifier;
 import fr.lefuturiste.statuer.stores.IncidentStore;
 import fr.lefuturiste.statuer.stores.ServiceStore;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static fr.lefuturiste.statuer.HibernateService.getEntityManager;
-
 public class CheckThread implements Runnable {
 
-  private List<Service> services;
   private final DiscordNotifier discordNotifier;
-
-  void updateService() {
-    App.logger.info("CheckThread was forced to update the services cache");
-    services = ServiceStore.getMany();
-  }
+  public volatile boolean canRun = true;
 
   CheckThread() {
     discordNotifier = new DiscordNotifier();
@@ -36,121 +25,159 @@ public class CheckThread implements Runnable {
   public void run() {
     Duration sleepDuration = Duration.ofSeconds(10);
     App.logger.info("Starting check thread with sleepDuration of " + sleepDuration.toString());
-    updateService();
     // load the services into a store in memory
     // have a clock
     // at each pulse, look in the store for each service if the time is elapsed
     // if time elapsed perform check
     // update the check time in the memory and in the db
     while (true) {
-      for (Service service : services)
-        checkService(service, false);
+      List<Service> services = ServiceStore.getMany();
+      for (Service service : services) {
+        try {
+          checkService(service, false);
+        } catch (InvalidInspectionResultException e) {
+          e.printStackTrace();
+          canRun = false;
+          return;
+        }
+      }
 
       try {
         Thread.sleep(sleepDuration.toMillis());
       } catch (InterruptedException e) {
         e.printStackTrace();
+        canRun = false;
+        return;
       }
     }
   }
 
   /**
-   * Will check a specified service, return true if the service's status changed
+   * Will check a specified service
    *
    * @param service      service to check
    * @param ignorePeriod if true, the service check period is ignored
-   * @return boolean
+   * @return return true if the service's status changed
+   * @throws InvalidInspectionResultException
    */
-  public boolean checkService(Service service, boolean ignorePeriod) {
+  public boolean checkService(Service service, boolean ignorePeriod) throws InvalidInspectionResultException {
+    service.inspect();
     boolean statusChanged = false;
     if (service.getUrl() == null || service.getUrl().equals("")) {
-      App.logger.debug("Skipped service " + service.getPath() + " (no url)");
+      App.logger.debug("- Skipped service " + service.getPath() + " (no url)");
       return false;
     }
-    App.logger.debug("Checking service " + service.getPath());
+    App.logger.debug("- Checking service " + service.getPath());
+
+    int checkPeriod = service.getCheckPeriod();
+    // we lower the checkperiod if the service is in the process of verifying the availability
+    if (!service.isAvailable() && service.getCurrentAttempts() >= 1) {
+      checkPeriod = 10;
+    }
     // if the time between now and last checked at is more or equal than the time of
     // check_period go check it
-    Duration durationSinceLastCheck = Duration.between(service.getLastCheckAt() != null ? service.getLastCheckAt()
-        : Instant.now().minus(Duration.ofSeconds(service.getCheckPeriod())), Instant.now());
-    if (durationSinceLastCheck.getSeconds() >= service.getCheckPeriod() || ignorePeriod) {
+    // we do a additional check to account for a null lastCheckAt field (because of a non saved lastCheckAt field)
+    Instant lastCheck = service.getLastCheckAt() != null ? service.getLastCheckAt() : Instant.now().minus(Duration.ofSeconds(checkPeriod));
+    Duration durationSinceLastCheck = Duration.between(lastCheck, Instant.now());
+    if (durationSinceLastCheck.getSeconds() >= checkPeriod || ignorePeriod) {
       if (ignorePeriod)
         App.logger.debug("Service was forced to be checked by ignoring period");
       else
-        App.logger.debug("This service was not checked since: " + durationSinceLastCheck.getSeconds());
-      HttpChecker checker = new HttpChecker();
+        App.logger.debug("    Not checked since: " + durationSinceLastCheck.getSeconds());
+      
+      // we need to check the service
+      boolean isAnAttempt = false;
+      Incident lastIncident = null;
+      HttpChecker checker = new HttpChecker(service.getTimeout());
       boolean isAvailable = checker.isAvailable(service);
-      App.logger.debug("Service available: " + isAvailable);
+      boolean persistService = false;
+
+      App.logger.debug("    This service has " + (service.getOngoingIncident() != null ? "at least one" : "no") + " ongoing incidents");
+      App.logger.debug("    Service available: " + isAvailable);
+
       if ((service.isAvailable() != null && service.isAvailable() != isAvailable)
           || (service.isAvailable() == null && !isAvailable)) {
-        service.setAvailable(isAvailable);
         // status has changed
-        Incident lastIncident;
-        if (!isAvailable) {
-          // status as changed as DOWN
-          Instant downInstant = Instant.now();
-          service.setLastDownAt(downInstant);
-          // we can create a incident
-          lastIncident = new Incident();
-          lastIncident.setId(UUID.randomUUID().toString());
-          lastIncident.setStartedAt(downInstant);
-          lastIncident.setService(service);
-          lastIncident.setReason(checker.getReason());
-        } else {
-          // status as changed as UP
-          // we can update our incident to indicate the end of the incident
-          lastIncident = service.getLastIncident();
-          lastIncident.setFinishedAt(Instant.now());
-        }
-        // App.logger.debug(lastIncident.getReason() == null ? "incident null" :
-        // lastIncident.getReason().toString());
-        IncidentStore.persist(lastIncident, false);
-        // since the incident is finished we can update the down time percentage of this
-        // service (last 90d)
-        // fetch all the last 90d incident for this service
-        EntityManager entitymanager = getEntityManager();
-        TypedQuery<Incident> query = entitymanager
-            .createQuery("from Incident where startedAt > :ago or startedAt < :now", Incident.class);
-        Instant startOfRange = Instant.now().minus(Duration.ofDays(90));
-        Instant endOfRange = Instant.now();
-        query.setParameter("ago", startOfRange);
-        query.setParameter("now", endOfRange);
-        List<Incident> incidents = query.getResultList();
-        Duration totalDownDuration = Duration.ofSeconds(0);
-        for (Incident incident : incidents) {
-          if (incident.getStartedAt().isBefore(startOfRange)) {
-            totalDownDuration = totalDownDuration.plus(Duration.between(startOfRange, incident.getFinishedAt()));
-          } else if (incident.getFinishedAt() == null) {
-            totalDownDuration = totalDownDuration.plus(Duration.between(incident.getStartedAt(), Instant.now()));
-          } else {
-            totalDownDuration = totalDownDuration
-                .plus(Duration.between(incident.getStartedAt(), incident.getFinishedAt()));
-          }
-        }
-        Duration rangeDuration = Duration.between(startOfRange, endOfRange);
-        float totalDownDurationSeconds = (float) totalDownDuration.getSeconds();
-        float rangeDurationSeconds = (float) rangeDuration.getSeconds();
-        App.logger.debug("totalDownDurationSeconds: " + totalDownDurationSeconds + " - rangeDurationSeconds: "
-            + rangeDurationSeconds);
-        float percentage = (float) ((1.0 - totalDownDurationSeconds / rangeDurationSeconds) * 100);
-        App.logger.debug("Percentage: " + String.valueOf(percentage));
-        BigDecimal numberBigDecimal = new BigDecimal(percentage);
-        numberBigDecimal = numberBigDecimal.setScale(8, RoundingMode.HALF_UP);
-        App.logger.debug("Updated uptime to: " + numberBigDecimal);
-        service.setUptime(numberBigDecimal.floatValue());
-        // end of uptime computation
-        App.logger.info("Status of service " + service.getPath() + " changed to " + (isAvailable ? "UP" : "DOWN"));
-        // we can now notify of the incident (updated or created)
-        discordNotifier.notify(lastIncident);
-        ServiceStore.persist(service, false);
         statusChanged = true;
+        service.setAvailable(isAvailable);
+
+        //App.logger.info("Status of service " + service.getPath() + " changed to " + (isAvailable ? "UP" : "DOWN"));
+
+        if (!isAvailable) {
+          App.logger.debug("    Changed as DOWN: We need to make sure before declaring a incident, the current attempt counter was reset");
+          // reset current attempt counter, this is the start of a new era!
+          service.setCurrentAttempts(0);
+          // the status changed as down, we increment the attempt counter before actually creating a incident.
+          // we also lower the service refresh rate to 20s
+          // we need to lower the check period for this thing
+          isAnAttempt = true;
+        } else {
+          App.logger.debug("    Changed as UP: End of the incident");
+          //  END OF THE INCIDENT: Status as changed as UP, we can update our incident to indicate the end of it.
+          lastIncident = service.getOngoingIncident();
+          if (lastIncident != null)
+            lastIncident.setFinishedAt(Instant.now());
+          persistService = true;
+        }
       }
+      // if the service was resetted and we have a null isAvailable field, we set it
       if (service.isAvailable() == null) {
         service.setAvailable(isAvailable);
-        ServiceStore.persist(service, false);
+        persistService = true;
       }
+
+      if (!statusChanged && !service.isAvailable() && service.getOngoingIncident() == null) {
+        // if the status did not changed; the service is down  and we have NO ongoing incident
+        // we increment the current attempt
+        isAnAttempt = true;
+      }
+      
+      if (isAnAttempt) {
+        App.logger.debug("    Increment attempts");
+        service.incrementCurrentAttempts();
+        persistService = true;
+        App.logger.debug("    Now, " + String.valueOf(service.getCurrentAttempts()) + " current attempts");
+        // if the current attemps for the service exeed the limit we declare a incident
+        if (service.getCurrentAttempts() >= service.getMaxAttempts()) {
+          // status as changed as DOWN
+          App.logger.debug("    Creation of a incident");
+          Instant downInstant = Instant.now();
+          service.setLastDownAt(downInstant).setCurrentAttempts(0);
+          // reset current attempt counter to not retriger the attempt
+          // we can create a incident
+          lastIncident = new Incident()
+            .setId(UUID.randomUUID().toString())
+            .setStartedAt(downInstant)
+            .setService(service)
+            .setReason(checker.getReason());
+          service.addIncident(lastIncident);
+        }
+      }
+
+      // if the lastIncident is non null that mean that the service is:
+      // either really DOWN exeeded the limit
+      // OR has finished an incident
+      if (lastIncident != null) {
+        // We persist the last incident and we regenerate the uptime field
+        IncidentStore.persist(lastIncident, false);
+        App.logger.debug("    Persisted incident " + lastIncident.getId());
+        service.setUptime(Uptime.computeUptime(service));
+        App.logger.debug("    Uptime computed to " + String.valueOf(service.getUptime()));
+        // we can now notify of the incident (updated or created)
+        discordNotifier.notify(lastIncident);
+        persistService = true;
+      }
+
+      // we update the last check at status for local purpose
       service.setLastCheckAt(Instant.now());
+
+      // we only need to persist the service if : a incident was created OR a incident is over
+      if (persistService) {
+        ServiceStore.persist(service, false);
+        App.logger.debug("    Service persisted");
+      }
     } else {
-      App.logger.debug("Service " + service.getPath() + " already checked");
+      App.logger.debug("    Service already checked");
     }
     return statusChanged;
   }
