@@ -44,12 +44,18 @@ public class Uptime {
       if (incident.getStartedAt().isBefore(startOfRange)) {
         totalDownDuration = totalDownDuration
           .plus(Duration.between(startOfRange, incident.getFinishedAt()));
+        // System.out.println("IS before, added:");
+        // System.out.println(Duration.between(startOfRange, incident.getFinishedAt()));
       } else if (incident.getFinishedAt() == null) {
+        // System.out.println("Null finished at, added:");
         totalDownDuration = totalDownDuration
           .plus(Duration.between(incident.getStartedAt(), Instant.now()));
+        // System.out.println(Duration.between(incident.getStartedAt(), Instant.now()));
       } else {
+        // System.out.println("Normal, added:");
         totalDownDuration = totalDownDuration
           .plus(Duration.between(incident.getStartedAt(), incident.getFinishedAt()));
+        // System.out.println(Duration.between(incident.getStartedAt(), incident.getFinishedAt()));
       }
     }
     // we compute the percentage using the two values

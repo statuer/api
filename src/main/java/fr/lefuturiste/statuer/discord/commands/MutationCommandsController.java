@@ -52,7 +52,6 @@ public class MutationCommandsController extends CommandController {
         Service service;
         if (objectQueryResult.service == null) {
           service = new Service();
-          service.setId(UUID.randomUUID().toString());
           service.setSlug(objectQueryResult.serviceSlug);
           service.setProject(project);
           ServiceStore.persist(service);

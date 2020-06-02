@@ -21,31 +21,65 @@ public class App {
 
   private static long startTime;
 
-  public static void main(String[] args) {
-    startTime = System.currentTimeMillis();
-    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().directory(System.getProperty("user.dir")).load();
+  private static Dotenv dotenv;
+
+  private static String latchedMode = "";
+
+  public static boolean init(String mode) {
+    if (dotenv == null) {
+      dotenv = Dotenv.configure()
+        .ignoreIfMissing()
+        .directory(System.getProperty("user.dir"))
+        .filename(mode == "test" ? ".env.test" : ".env")
+        .load();
+    }
+    System.out.println("Latchedmode: " + latchedMode);
+    if (latchedMode == mode) {
+      return true;
+    }
     System.setProperty("org.slf4j.simpleLogger.defaultLogLevel",
         Objects.requireNonNull(dotenv.get("LOG_LEVEL") == null ? "info" : dotenv.get("LOG_LEVEL")));
     logger = LoggerFactory.getLogger(App.class);
-    String[] requiredKeys = { "PORT", "MYSQL_CONNECTION_URL", "MYSQL_USERNAME", "MYSQL_PASSWORD", "DISCORD_BOT_TOKEN",
-        "DISCORD_CLIENT_ID" };
+    String[] requiredKeys = {
+      "PORT",
+      "MYSQL_CONNECTION_URL",
+      "MYSQL_USERNAME",
+      "MYSQL_PASSWORD",
+      "DISCORD_BOT_TOKEN",
+      "DISCORD_CLIENT_ID"
+    };
     ArrayList<String> missingKeys = new ArrayList<>();
     for (String key : requiredKeys) {
-      if (dotenv.get(key) == null)
+      if (dotenv.get(key) == null) {
         missingKeys.add(key);
+      }
     }
     if (!missingKeys.isEmpty()) {
       logger.error("Missing keys in environment variables");
       logger.error("These environments keys are missing: " + missingKeys.toString());
-      return;
+      return false;
     }
-    logger.info("Starting application...");
     Spark.port(Integer.valueOf(Objects.requireNonNull(dotenv.get("PORT"))));
     System.setProperty("org.jboss.logging.provider", "slf4j");
     System.setProperty("user.timezone", "Europe/Paris");
     HibernateService.setConfig(dotenv.get("MYSQL_CONNECTION_URL"), dotenv.get("MYSQL_USERNAME"),
         dotenv.get("MYSQL_PASSWORD"));
+    if (mode == "test") {
+      HibernateService.cleanDatabase();
+    }
     HibernateService.getEntityManager();
+
+    latchedMode = mode;
+    logger.info("Application intialized");
+    return true;
+  }
+
+  public static void main(String[] args) {
+    startTime = System.currentTimeMillis();
+    if (!init("default")) {
+      return;
+    }
+    logger.info("Starting application...");
     HibernateService.launchConnexionFailurePreventerUtil();
     try {
       new Bot(dotenv.get("DISCORD_CLIENT_ID"), dotenv.get("DISCORD_BOT_TOKEN")).start();

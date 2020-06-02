@@ -10,7 +10,6 @@ import fr.lefuturiste.statuer.stores.ServiceStore;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 public class CheckThread implements Runnable {
 
@@ -147,7 +146,6 @@ public class CheckThread implements Runnable {
           // reset current attempt counter to not retriger the attempt
           // we can create a incident
           lastIncident = new Incident()
-            .setId(UUID.randomUUID().toString())
             .setStartedAt(downInstant)
             .setService(service)
             .setReason(checker.getReason());

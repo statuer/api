@@ -3,6 +3,9 @@ package fr.lefuturiste.statuer;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import javax.persistence.EntityManager;
+
+import java.sql.*;  
+
 import java.time.Duration;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -61,4 +64,33 @@ public class HibernateService {
       }
     }, 0, duration);
   }
+
+  public static void cleanDatabase() {
+    try {
+      Connection con = DriverManager.getConnection(HibernateService.connectionUrl, HibernateService.username, HibernateService.password);
+      Statement stmt = con.createStatement();
+      String databaseName = con.getCatalog();
+      System.out.println(databaseName);
+      stmt.executeUpdate("DROP DATABASE " + databaseName);
+      stmt.executeUpdate("CREATE SCHEMA IF NOT EXISTS " + databaseName + " DEFAULT CHARACTER SET utf8");
+      con.close();
+    } catch (Exception e)  {
+      e.printStackTrace();
+      System.err.println("cleanDatabse(): error");
+    }
+  }
 }
+
+/*
+try {
+  Connection con = DriverManager.getConnection("URL", "USERNAME", "PASSWORD");
+  Statement stmt = con.createStatement();
+  String databaseName = con.getCatalog();
+  System.out.println(databaseName);
+  stmt.executeUpdate("DROP DATABASE " + databaseName + "; CREATE SCHEMA IF NOT EXISTS `" + databaseName + "` DEFAULT CHARACTER SET utf8 ;");
+  con.close();
+} catch(Exception e)  {
+  System.err.println("error, cannot clean database");
+  e.printStackTrace();
+}
+*/

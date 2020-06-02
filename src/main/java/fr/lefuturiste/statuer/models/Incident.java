@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import com.introproventures.graphql.jpa.query.annotation.GraphQLDescription;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * The incident entity represent a period where a service was down. It is
@@ -54,6 +55,10 @@ public class Incident {
   @ManyToOne
   @GraphQLDescription("The service which is concerned by the incident")
   private Service service;
+
+  public Incident() {
+    id = UUID.randomUUID().toString();
+  }
 
   public String getId() {
     return id;

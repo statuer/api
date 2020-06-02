@@ -3,7 +3,6 @@ package fr.lefuturiste.statuer.models;
 import org.hibernate.validator.constraints.URL;
 import org.json.JSONObject;
 
-import fr.lefuturiste.statuer.App;
 import fr.lefuturiste.statuer.InvalidInspectionResultException;
 
 import javax.persistence.*;
@@ -14,7 +13,9 @@ import com.introproventures.graphql.jpa.query.annotation.GraphQLDescription;
 import com.introproventures.graphql.jpa.query.annotation.GraphQLIgnore;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * The entity service represent most of the time a server like an HTTP server, a
@@ -82,6 +83,10 @@ public class Service {
   @OneToMany(mappedBy = "service", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
   @OrderBy("finishedAt DESC")
   private Set<Incident> incidents;
+
+  public Service() {
+    id = UUID.randomUUID().toString();
+  }
 
   public String getId() {
     return id;
@@ -292,6 +297,9 @@ public class Service {
   }
 
   public Service addIncident(Incident incident) {
+    if (incidents == null) {
+      incidents = new HashSet<>();
+    }
     incidents.add(incident);
     return this;
   }
