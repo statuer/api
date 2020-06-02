@@ -9,10 +9,8 @@ import java.time.Instant;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.lefuturiste.statuer.models.Incident;
-import fr.lefuturiste.statuer.models.Service;
-import fr.lefuturiste.statuer.stores.IncidentStore;
-import fr.lefuturiste.statuer.stores.ServiceStore;
+import fr.lefuturiste.statuer.models.*;
+import fr.lefuturiste.statuer.stores.*;
 
 /**
  * Test the uptime computation logic
@@ -28,9 +26,10 @@ public class UptimeTest
     public void shouldReturnFullUptime()
     {
       Instant now = Instant.ofEpochSecond(Instant.now().getEpochSecond());
-      Service service = new Service().setSlug("a");
+      Service service = new Service().generateId().setSlug("a");
       ServiceStore.persist(service, false);
       Incident incident = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(now)
         .setFinishedAt(now);
@@ -45,9 +44,10 @@ public class UptimeTest
     {
       Instant now = Instant.ofEpochSecond(Instant.now().getEpochSecond());
       Instant startedAt = now.minus(Duration.ofDays(45));
-      Service service = new Service().setSlug("a");
+      Service service = new Service().generateId().setSlug("a");
       ServiceStore.persist(service, false);
       Incident incident = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt)
         .setFinishedAt(now);
@@ -62,9 +62,10 @@ public class UptimeTest
     {
       Instant now = Instant.ofEpochSecond(Instant.now().getEpochSecond());
       Instant startedAt = now.minus(Duration.ofDays(22).plus(Duration.ofHours(12)));
-      Service service = new Service().setSlug("a");
+      Service service = new Service().generateId().setSlug("a");
       ServiceStore.persist(service, false);
       Incident incident = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt)
         .setFinishedAt(now);
@@ -79,9 +80,10 @@ public class UptimeTest
     {
       Instant now = Instant.ofEpochSecond(Instant.now().getEpochSecond());
       Instant startedAt = now.minus(Duration.ofDays(90));
-      Service service = new Service().setSlug("a");
+      Service service = new Service().generateId().setSlug("a");
       ServiceStore.persist(service, false);
       Incident incident = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt)
         .setFinishedAt(now);
@@ -94,12 +96,13 @@ public class UptimeTest
     @Test
     public void shouldTakeInAccountManyIncidents()
     {
-      Service service = new Service().setSlug("a");
+      Service service = new Service().generateId().setSlug("a");
       ServiceStore.persist(service, false);
 
       Instant now = Instant.ofEpochSecond(Instant.now().getEpochSecond());
       Instant startedAt = now.minus(Duration.ofHours(55));
       Incident incident1 = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt)
         .setFinishedAt(now);
@@ -107,6 +110,7 @@ public class UptimeTest
 
       startedAt = now.minus(Duration.ofHours(10));
       Incident incident2 = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt)
         .setFinishedAt(now);
@@ -121,13 +125,14 @@ public class UptimeTest
     @Test
     public void shouldTakeInAccountIncidentThatStartedPreviously()
     {
-      Service service = new Service().setSlug("a");
+      Service service = new Service().generateId().setSlug("a");
       ServiceStore.persist(service, false);
 
       // incident 1: lasted for 15 days but have only 5 days in the interval
       Instant now = Instant.ofEpochSecond(Instant.now().getEpochSecond());
       Instant startedAt = now.minus(Duration.ofDays(100));
       Incident incident1 = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt)
         .setFinishedAt(startedAt.plus(Duration.ofDays(15)));
@@ -136,6 +141,7 @@ public class UptimeTest
       // incident 2: lasted for 89 hours but in the middle of the 90 days interval
       startedAt = now.minus(Duration.ofDays(40));
       Incident incident2 = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt)
         .setFinishedAt(startedAt.plus(Duration.ofHours(89)));
@@ -155,13 +161,14 @@ public class UptimeTest
     @Test
     public void shouldTakeInAccountOngoingIncident()
     {
-      Service service = new Service().setSlug("a");
+      Service service = new Service().generateId().setSlug("a");
       ServiceStore.persist(service, false);
       Instant now = Instant.ofEpochSecond(Instant.now().getEpochSecond());
 
       // incident 1: ongoing since 250 hours so last 250 hours
       Instant startedAt = now.minus(Duration.ofHours(250));
       Incident incident1 = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt);
       IncidentStore.persist(incident1, false);
@@ -169,6 +176,7 @@ public class UptimeTest
       // incident 2: lasted 100 hours in the interval
       startedAt = now.minus(Duration.ofDays(20));
       Incident incident2 = new Incident()
+        .generateId()
         .setService(service)
         .setStartedAt(startedAt)
         .setFinishedAt(startedAt.plus(Duration.ofHours(100)));

@@ -56,8 +56,9 @@ public class Incident {
   @GraphQLDescription("The service which is concerned by the incident")
   private Service service;
 
-  public Incident() {
+  public Incident generateId() {
     id = UUID.randomUUID().toString();
+    return this;
   }
 
   public String getId() {

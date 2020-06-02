@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import com.introproventures.graphql.jpa.query.annotation.GraphQLDescription;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * The project entity represent a group of service
@@ -47,6 +48,11 @@ public class Project {
   @GraphQLDescription("All the services owned by the project")
   @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
   private Set<Service> services;
+
+  public Project generateId() {
+    id = UUID.randomUUID().toString();
+    return this;
+  }
 
   public String getId() {
     return id;

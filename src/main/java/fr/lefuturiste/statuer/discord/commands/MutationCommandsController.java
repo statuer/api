@@ -28,9 +28,7 @@ public class MutationCommandsController extends CommandController {
     Namespace namespace;
     if (objectQueryResult.namespace == null) {
       // create that namespace
-      namespace = new Namespace();
-      namespace.setId(UUID.randomUUID().toString());
-      namespace.setSlug(objectQueryResult.namespaceSlug);
+      namespace = new Namespace().generateId().setSlug(objectQueryResult.namespaceSlug);
       NamespaceStore.persist(namespace);
       createdCount++;
     } else {
@@ -39,10 +37,7 @@ public class MutationCommandsController extends CommandController {
     if (objectQueryResult.projectSlug != null) {
       Project project;
       if (objectQueryResult.project == null) {
-        project = new Project();
-        project.setId(UUID.randomUUID().toString());
-        project.setSlug(objectQueryResult.projectSlug);
-        project.setNamespace(namespace);
+        project = new Project().generateId().setSlug(objectQueryResult.projectSlug).setNamespace(namespace);
         ProjectStore.persist(project);
         createdCount++;
       } else {
@@ -51,9 +46,7 @@ public class MutationCommandsController extends CommandController {
       if (objectQueryResult.serviceSlug != null) {
         Service service;
         if (objectQueryResult.service == null) {
-          service = new Service();
-          service.setSlug(objectQueryResult.serviceSlug);
-          service.setProject(project);
+          service = new Service().generateId().setSlug(objectQueryResult.serviceSlug).setProject(project);
           ServiceStore.persist(service);
           createdCount++;
         }

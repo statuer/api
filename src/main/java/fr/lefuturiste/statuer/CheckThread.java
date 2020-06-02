@@ -146,6 +146,7 @@ public class CheckThread implements Runnable {
           // reset current attempt counter to not retriger the attempt
           // we can create a incident
           lastIncident = new Incident()
+            .generateId()
             .setStartedAt(downInstant)
             .setService(service)
             .setReason(checker.getReason());

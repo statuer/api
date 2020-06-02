@@ -1,2 +1,6 @@
 target
 target/
+.env
+.env.test
+.env.prod
+.env.local

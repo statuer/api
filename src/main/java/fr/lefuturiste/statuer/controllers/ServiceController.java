@@ -43,9 +43,10 @@ public class ServiceController {
 
     public static Route store = (req, res) -> {
         JSONObject body = new JSONObject(req.body());
-        Service service = new Service();
-        service.setSlug(body.getString("slug"));
-        service.setUrl(body.getString("url"));
+        Service service = new Service()
+            .generateId()
+            .setSlug(body.getString("slug"))
+            .setUrl(body.getString("url"));
         if (body.has("type")) {
             service.setType(body.getString("type"));
         }

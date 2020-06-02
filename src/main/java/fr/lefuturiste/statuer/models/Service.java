@@ -83,19 +83,16 @@ public class Service {
   @OneToMany(mappedBy = "service", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
   @OrderBy("finishedAt DESC")
   private Set<Incident> incidents;
-
-  public Service() {
+  
+  public Service generateId() {
     id = UUID.randomUUID().toString();
+    return this;
   }
 
   public String getId() {
     return id;
   }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
+  
   public String getSlug() {
     return slug;
   }
@@ -153,6 +150,9 @@ public class Service {
    * @return Incident The ongoing incident
    */
   public Incident getOngoingIncident() {
+    if (incidents == null) {
+      return null;
+    }
     for (Incident incident : incidents) {
       if (incident.getFinishedAt() == null) {
         return incident;
@@ -195,6 +195,10 @@ public class Service {
 
   public Instant getLastCheckAt() {
     return lastCheckAt;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public Service setSlug(String slug) {
@@ -279,6 +283,9 @@ public class Service {
 
   public boolean inspect() throws InvalidInspectionResultException {
     int ongoingIncidents = 0;
+    if (incidents == null) {
+      return true;
+    }
     for (Incident incident : incidents) {
       if (incident.getFinishedAt() == null) {
         ongoingIncidents++;

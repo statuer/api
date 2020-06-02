@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import com.introproventures.graphql.jpa.query.annotation.GraphQLDescription;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * The namespace entity represent a organization, a corporation eg. Github,
@@ -44,6 +45,11 @@ public class Namespace {
   @OneToMany(mappedBy = "namespace", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
   @GraphQLDescription("All the projects of the namespace")
   private Set<Project> projects;
+
+  public Namespace generateId() {
+    id = UUID.randomUUID().toString();
+    return this;
+  }
 
   public String getId() {
     return id;

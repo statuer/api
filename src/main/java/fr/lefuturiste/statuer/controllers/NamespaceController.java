@@ -40,9 +40,7 @@ public class NamespaceController {
 
     public static Route store = (req, res) -> {
         JSONObject body = new JSONObject(req.body());
-        Namespace namespace = new Namespace();
-        namespace.setId(UUID.randomUUID().toString());
-        namespace.setSlug(body.getString("slug"));
+        Namespace namespace = new Namespace().generateId().setSlug(body.getString("slug"));
         NamespaceStore.persist(namespace);
         res.status(200);
         return new JSONObject()

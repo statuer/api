@@ -42,9 +42,7 @@ public class ProjectController {
 
     public static Route store = (req, res) -> {
         JSONObject body = new JSONObject(req.body());
-        Project project = new Project();
-        project.setId(UUID.randomUUID().toString());
-        project.setSlug(body.getString("slug"));
+        Project project = new Project().generateId().setSlug(body.getString("slug"));
         if (body.has("name"))
             project.setName(body.getString("name"));
         if (body.has("discord_webhook"))
