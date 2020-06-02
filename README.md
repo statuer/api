@@ -107,3 +107,14 @@ This will return the availability (up|down) of the service along with the respon
 - MongoDB (previsioning)
 - RabbitMQ (previsioning)
 - SSH (previsioning)
+
+## Roadmap
+
+- Add more Notifiers
+- Add more Checkers
+- Create documentation
+- Add unit test for CheckThread
+- Add unit test for Discord commands
+- Add unit test for Unit test
+- Chain setter
+- Directly use public proprety instead of getter
